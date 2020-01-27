@@ -113,8 +113,10 @@ function setUserWorkSpace($homeDir,$projectDir,$sampleData="",$projectData,$verb
     			$_SESSION['errorData']['Error'][] = "Cannot set uploads directory $dataDir/uploads";
     			return 0;
     		}
-    		if (!is_dir("$dataDirP/uploads"))
+    		if (!is_dir("$dataDirP/uploads")){
     			mkdir("$dataDirP/uploads", 0775);
+			chmod("$dataDirP/uploads", 0775);
+		}
 	}
 
 	//creating repository directory
@@ -136,6 +138,7 @@ function setUserWorkSpace($homeDir,$projectDir,$sampleData="",$projectData,$verb
 		}
     		if (!is_dir("$dataDirP/repository"))
     			mkdir("$dataDirP/repository", 0775);
+			chmod("$dataDirP/repository", 0775);
 	}
 
 	// creating other directories not registered in mongo

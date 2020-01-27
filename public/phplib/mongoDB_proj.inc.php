@@ -122,8 +122,8 @@ function createProjectDir($dirfn,$dirrfn,$project_attr=Array(), $asRoot=0,$owner
 
     //  make project directory
     
-    mkdir($dirrfn,0777);
-    chmod($dirrfn, 0777);
+    mkdir($dirrfn,0775);
+    chmod($dirrfn, 0775);
 
 
     // set project metadata

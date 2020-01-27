@@ -6,33 +6,35 @@
  *
  */
 
-require "phplib/genlibraries.php";
+require __DIR__ . "/../../config/bootstrap.php";
+
 
 /*
  * IMPORTANT:
- * - execute with sudo to be able to 'rm' www-data data : sudo php applib/cleanUsersData.php
+ * - execute with sudo to be able to 'rm' www-data data : sudo php cleanUsersData.php || sudo -u www-data php cleanUsersData.php
  * - make sure that mongo 'userscol'(phplib/db.inc.php) and 'shared' global are in agreement (dev/prod)
  *
  */
 
 
 $caduca_readme = 7;     // expiration for README.md files
-$dry_run   = false ;     // true: evaluate files but dont delete them. false; clean files
+$dry_run   = false;     // true: evaluate files but dont delete them. false; clean files
 $soft_mode = true;      // true: only README files are cleaned, consequently cleaning only not-used anon users. false: REGISTERED USERS FILES ARE CLEANED
 
 // disk
-$GLOBALS['shared']     = "/data/MuG/"; // MuGdev/";
-$GLOBALS['dataDir']    = $GLOBALS['shared']."MuG_userdata/";
+$GLOBALS['shared']     = "/gpfs/vre/";
+$GLOBALS['dataDir']    = $GLOBALS['shared']."userdata/";
 
 // db
-$GLOBALS['dbname_VRE']  = "MuGVRE_irb";
-require "phplib/db.inc.php";
+$GLOBALS['dbname_VRE']  = "eucanshare_vre";
+
+#require "../../public/phplib/db.inc.php";
 
 
 
 // evaluate files for all users
 $fu = $GLOBALS['usersCol']->find(array('Type' => "3"));
-//$fu = $GLOBALS['usersCol']->find(array('id' => array('$in' => array("MuGANON5b9e960ec7644","MuGANON5b8e903f20dbd"))) );
+//$fu = $GLOBALS['usersCol']->find(array('id' => array('$in' => array("ECSHANON5e0be9f43ad8b"))) );
 
 // foreach user
 foreach ( array_values(iterator_to_array($fu)) as $v ){
@@ -165,10 +167,13 @@ foreach ( array_values(iterator_to_array($fu)) as $v ){
                     }
 
                 // check expiration based on 'caduca' global var
-                }else{
-                    $days2expire = intval(( $f['expiration']->sec  - time()) / (24 * 3600));
-        			$time_exp    = strftime('%Y/%m/%d %H:%M', $f['expiration']->sec);
-        			$time_mtime  = strftime('%Y/%m/%d %H:%M', $f['mtime']);
+		}else{
+			if (is_object($f['expiration']))
+				$f['expiration'] =$f['expiration']->toDateTime()->format('U');
+
+			$days2expire = intval(( $f['expiration']  - time() ) / (24 * 3600));
+        		$time_exp    = strftime('%Y/%m/%d %H:%M', $f['expiration']);
+        		$time_mtime  = strftime('%Y/%m/%d %H:%M', $f['mtime']);
 
                     // file is expired    
                     if ($days2expire < 0){
