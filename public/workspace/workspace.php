@@ -94,7 +94,10 @@ if (isset($_REQUEST['op'])){
 		$newName= $_REQUEST['fn'].".tar.gz";
 		$tmpZip = $GLOBALS['dataDir']."/".$userPath."/".$GLOBALS['tmpUser_dir']."/".basename($newName); 
 
-		$cmd = "/bin/tar -czf $tmpZip -C $rfn .  2>&1";
+		$cmd = "/bin/tar -czf $tmpZip -C $rfn  2>&1";
+		#$cmd = "/bin/tar -czf $tmpZip -C $rfn .  2>&1"; # TODO ORIGEN of INFINITE TARS?
+		logger("workspace/workspace.php:550 -- TAR CMD: ".$cmd);
+
 		exec($cmd,$output);
 		if ( !is_file($tmpZip) ){
 			$_SESSION['errorData']['Error'][] = "Uncompressed file not created.";
