@@ -6,10 +6,10 @@
             "description": "My Input 1",
             "help": "Some explanation about 'My Input 1' displayed to user in help tooltips ",
             "file_type": [
-                "FASTA"
+                "NIFTI"
             ],
             "data_type": [
-                "sequence_dna"
+                "bioimage"
             ],
             "required": true,
             "allow_multiple": false
@@ -19,10 +19,10 @@
             "description": "My Input 2",
             "help": "Some explanation about 'My Input 2' displayed to user in help tooltips ",
             "file_type": [
-                "FASTA"
+                "NIFTI"
             ],
             "data_type": [
-                "sequence_dna"
+                "bioimage"
             ],
             "required": true,
             "allow_multiple": false
@@ -45,7 +45,7 @@
     ],
     "arguments": [
     {
-        "name": "argument_id1 ",
+        "name": "argument_id1",
         "description": "Argument 1",
         "help": "Some explanation about 'Argument 1' displayed to user in help tooltips",
         "type": "integer",
@@ -58,15 +58,15 @@
             "required": true,
             "allow_multiple": false,
             "file": {
-                "file_type": "FASTA",
-                "data_type": "sequence_dna",
+                "file_type": "NIFTI",
+                "data_type": "image_mask",
                 "meta_data": {
                     "visible": true,
                     "description": "Here goes a short description of what this output file contains"
                 }
             }
         },
-        { 
+        {
             "name": "output_id2",
             "required": true,
             "allow_multiple": false,

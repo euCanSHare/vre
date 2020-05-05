@@ -13,7 +13,7 @@
         "url": "https://MyUniversity.uni.cat/MyGroup"
     },
     "keywords": [
-      "DNA"
+      "imaging"
     ],
    "keywords_tool": [
       "whatever",
@@ -24,7 +24,7 @@
         "cpus": 4,
         "executable": "/VM/path/where/main/executable/is/going/to/be/MyTool.py",
         "clouds": {
-            "mug-irb": {
+            "BSC_sl": {
                 "launcher": "PMES",
                 "workflowType": "COMPSs",
                 "minimumVMs": 1,
@@ -39,10 +39,10 @@
             "description": "My Input 1",
             "help": "Some explanation about 'My Input 1' displayed to user in help tooltips ",
             "file_type": [
-                "FASTA"
+                "NIFTI"
             ],
             "data_type": [
-                "sequence_dna"
+                "bioimage"
             ],
             "required": true,
             "allow_multiple": false
@@ -52,10 +52,10 @@
             "description": "My Input 2",
             "help": "Some explanation about 'My Input 2' displayed to user in help tooltips ",
             "file_type": [
-                "FASTA"
+                "NIFTI"
             ],
             "data_type": [
-                "sequence_dna"
+                "bioimage"
             ],
             "required": true,
             "allow_multiple": false
@@ -92,8 +92,8 @@
             "required": true,
             "allow_multiple": false,
             "file": {
-                "file_type": "FASTA",
-                "data_type": "sequence_dna",
+                "file_type": "NIFTI",
+                "data_type": "image_mask",
                 "meta_data": {
                     "visible": true,
                     "description": "Here goes a short description of what this output file contains"

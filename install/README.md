@@ -202,10 +202,15 @@ sudo qconf -as mail.domain.es
 
 ### Maintainance tasks
 
-Each time a new user access VRE, an anonymous account is created until it registers. Set a cron job for regularly cleanning old temporarily user, from both, database and data directory.
+Each time a new user accesses the VRE, an anonymous account is transparently created until it registers. It generates a serie of entries in both, the data directory and the Mongo database that should be regularly cleaned. Set a cron job for *deleting these temporal users*, as well as the *expired data* - if you configured it at `config/globals.inc.php`.
+You can build your own script or use `scripts/maintainance/cleanUsersData.php`. The first lines of the script contains configurable arguments, read and set them before actually running it. Make sure the cron job runs under a UNIX user able to delete VRE data, for instance, the same UNIX user serving VRE (www-data), or the root user.
 
 ```
-php scripts/maintainance/cleanUsersData.php
+crontab -e
+```
+```
+# m h  dom mon dow   command
+00 5  *   *   *      /path/to/VRE/scripts/maintainance/cleanUsersData.php >> /path/to/VRE/logs/cleanUsersData.log 2>&1
 ```
 
 <a name="install_my_first_tool"></a>
