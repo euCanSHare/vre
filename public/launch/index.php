@@ -12,7 +12,6 @@ $vslzrs=array();
 $toolList = array_merge($tls, $vslzrs);
 
 sort($toolList);
-
 ?>
 
 
@@ -170,9 +169,10 @@ sort($toolList);
                     </thead>
                     <tbody>
 											<?php foreach($toolList as $tool) { 
-										$comb = getInputFilesCombinations($tool);
+											$comb = getInputFilesCombinations($tool);
+											$style_disable = ($tool["status"]== 1? "": "style=\"color:grey\" ");
 												//vaR_dump($tool["input_files_combinations"]["description"]); ?>
-												<tr class="first-level-tr">
+												<tr class="first-level-tr" <?php echo $style_disable; ?>  >
 													<td></td>
 													<td><?php echo $tool["name"]; ?></td>
 													<td><?php echo $tool["short_description"]; ?></td>
