@@ -375,7 +375,7 @@ switch(pathinfo($_SERVER['PHP_SELF'])['filename']){
 	case 'results':
 	case 'tutorials':
 	case 'references':?>
-		<script src="/assets/pages/scripts/help-editor.js?v=<?php echo rand(); ?>" type="text/javascript"></script>	
+		<script src="assets/pages/scripts/help-editor.js?v=<?php echo rand(); ?>" type="text/javascript"></script>	
 		<?php break;?>
 <?php } ?>
 <!-- END PAGE LEVEL SCRIPTS -->
