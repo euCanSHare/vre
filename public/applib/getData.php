@@ -12,6 +12,7 @@ if(! $_REQUEST['uploadType']){
 
 switch ($_REQUEST['uploadType']){
 	case 'file':
+		header ("Connection: close");
 		getData_fromLocal();
 		break;
 	case 'url':
@@ -33,6 +34,9 @@ switch ($_REQUEST['uploadType']){
         	break;
 	case 'sampleData':
 		getData_fromSampleData($_REQUEST);
+		break;
+	case 'eush_demo':
+		getData_demo2020();
 		break;
 	default:
 		die(0);

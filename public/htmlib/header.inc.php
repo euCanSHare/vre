@@ -87,6 +87,7 @@
 		case 'adminJobs':
 		case 'myNewTools':
 		case 'dashboard':
+		case 'eush_projects':
 		case 'datasets':
 		case 'logs': ?>
 			<link href="assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.css" rel="stylesheet" type="text/css" />
@@ -213,6 +214,9 @@
 		case 'jsonTestValidator':
 		case 'dashboard':
 		case 'datasets':
+		case 'eush_projects':
+		case 'eush_subjects':
+		case 'eush_experiments':
 		case 'sampleDataList':
 		case 'dataFromTxt':
 		case 'dataFromID':
