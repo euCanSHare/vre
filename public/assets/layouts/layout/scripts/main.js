@@ -1,18 +1,16 @@
 
 function openTermsOfUse() {
-//Decomment for tearms of use to work
+	 $('#modalTerms').modal({ show: 'true' });
 
-	// $('#modalTerms').modal({ show: 'true' });
-
-	// $.ajax({
-	// 	type: "POST",
-	// 	url: baseURL + "/applib/getTermsOfUse.php",
-	// 	data:"id=1",
-	// 	success: function(data) {
-
-	// 		$('#modalTerms .modal-body .container-terms').html(data);
-	// 	}
-	// });
+	 $.ajax({
+	 	type: "POST",
+	 	//url: baseURL + "/applib/getTermsOfUse.php",
+		url: baseURL + "/applib/termsofuse.html",
+	 	data:"id=1",
+	 	success: function(data) {
+	 		$('#modalTerms .modal-body .container-terms').html(data);
+	 	}
+	 });
 }
 
 
