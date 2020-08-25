@@ -85,6 +85,11 @@ switch (pathinfo($_SERVER['PHP_SELF'])['filename']) {
 		$currentSubSection = 'rp';
 		$currentSubSubSection = 'bs';
 		break;
+	case 'eush_projects':
+		$currentSection = 'dt';
+		$currentSubSection = 'rp';
+		$currentSubSubSection = 'ps';
+		break;
 	case 'dataFromID':
 		$currentSection = 'dt';
 		$currentSubSection = 'id';
@@ -249,6 +254,13 @@ sort($visualizers);
 								<span class="title">From Catalogue</span>
 								<span class="arrow"></span>
 							</a>
+							<ul class="sub-menu">
+								<li class="nav-item <?php if ($currentSubSubSection == 'ps') { ?>active open<?php } ?>">
+									<a href="getdata/eush_bioimages/eush_projects.php" class="nav-link">
+										<span class="title">EuroBioImaging </span>
+									</a>
+								</li>
+							</ul>
 							<ul class="sub-menu">
 								<li class="nav-item <?php if ($currentSubSubSection == 'bs') { ?>active open<?php } ?>">
 									<a href="getdata/datasets.php" class="nav-link">
