@@ -184,14 +184,14 @@ foreach (array_values(iterator_to_array($GLOBALS['countriesCol']->find(array(), 
                                                                 ?>
                                                             </select>
                                                         </div>
-                                                        <!-- <?php //if (!allowedRoles($_SESSION['User']['Type'], $GLOBALS['TOOLDEV']) && (checkTermsOfUse())) { ?>
+                                                        <?php if (!allowedRoles($_SESSION['User']['Type'], $GLOBALS['TOOLDEV']) && (checkTermsOfUse())) { ?>
                                                             <div class="form-group margin-top-30">
                                                                 <label class="control-label">You are a standard user. Do you want to bring your own tool?
-                                                                    <a href="http://www.multiscalegenomics.eu/MuGVRE/policy/" target="_blank"><i class="icon-question tooltips" data-container="body" data-placement="right" data-original-title="Click here to read more about how to bring your own tool."></i></a>
+                                                                    <a href="https://eucanshare.bsc.es/dataportal/?page_id=629" target="_blank"><i class="icon-question tooltips" data-container="body" data-placement="right" data-original-title="Click here to read more about how to bring your own tool."></i></a>
                                                                 </label>
                                                                 <br /><br />
-                                                                <a href="<?php //echo $GLOBALS['BASEURL']; ?>helpdesk/?sel=tooldev" class="btn green">Become tool developer</a></div>
-                                                        <?php //} ?> -->
+                                                                <a href="<?php echo $GLOBALS['BASEURL']; ?>helpdesk/?sel=tooldev" class="btn green">Become tool developer</a></div>
+                                                        <?php } ?>
                                                         <div class="form-group margin-top-30">
                                                             <label class="mt-checkbox mt-checkbox-outline" style="margin-bottom:0;"> Please, accept <a href="javascript:openTermsOfUse();">terms of use</a>
                                                                 <input type="checkbox" value="1" name="terms" id="terms" <?php if (checkTermsOfUse()) echo 'checked readonly'; ?> />
