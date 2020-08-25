@@ -24,7 +24,7 @@
         "cpus": 4,
         "executable": "/VM/path/where/main/executable/is/going/to/be/MyTool.py",
         "clouds": {
-            "BSC_sl": {
+            "BSC_Starlife": {
                 "launcher": "PMES",
                 "workflowType": "COMPSs",
                 "minimumVMs": 1,

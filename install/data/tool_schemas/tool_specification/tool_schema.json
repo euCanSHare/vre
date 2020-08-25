@@ -99,7 +99,7 @@
         "clouds": {
           "type": "object",
           "properties": {
-            "BSC_sl": {
+            "BSC_Starlife": {
               "$ref": "#/definitions/cloud"
             }
           },
@@ -157,8 +157,13 @@
                 "LIF",
                 "MDCRD",
                 "NETCDF",
-                  "NIFTI",
-                  "DICOM",
+                "NIFTI",
+                "DICOM",
+                "BIM",
+                "FAM",
+                "FRQ",
+                "RAW",
+                "NOSEX",
                 "PAC",
                 "PARMTOP",
                 "PDB",
@@ -199,6 +204,11 @@
 		"deep_learning_model",
 		"parameter_file",
 		"report",
+                "extended_MAP_file",
+                "sample_information_file",
+                "allele_frequency_report",
+		"genome_annotation",
+                "component_file",
 		"machine_learning_features"
               ]
             }
@@ -303,8 +313,13 @@
                 "LIF",
                 "MDCRD",
                 "NETCDF",
-                  "NIFTI",
-                  "DICOM",
+                "NIFTI",
+                "DICOM",
+                "BIM",
+                "FAM",
+                "FRQ",
+                "RAW",
+                "NOSEX",
                 "PAC",
                 "PARMTOP",
                 "PDB",
@@ -345,6 +360,10 @@
                 "deep_learning_model",
                 "parameter_file",
                 "report",
+                "extended_MAP_file",
+                "sample_information_file",
+                "allele_frequency_report",
+                "component_file",
                 "machine_learning_features"
 
               ]
@@ -506,6 +525,11 @@
                   "NETCDF",
                   "NIFTI",
                   "DICOM",
+                  "BIM",
+                  "FAM",
+                  "FRQ",
+                  "RAW",
+                  "NOSEX",
                   "PAC",
                   "PARMTOP",
                   "PDB",
@@ -543,6 +567,11 @@
                 "deep_learning_model",
                 "parameter_file",
                 "report",
+                "extended_MAP_file",
+                "sample_information_file",
+                "allele_frequency_report",
+		"genome_annotation",
+                "component_file",
                 "machine_learning_features"
                 ]
               },
