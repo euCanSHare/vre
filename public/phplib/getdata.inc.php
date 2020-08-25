@@ -4,6 +4,16 @@
 /////// FROM LOCAL
 /////////////////////////////////
 
+$errMsg = array(
+	0=>"[UPLOAD_ERR_OK]:  There is no error, the file uploaded with success",
+	1=>"[UPLOAD_ERR_INI_SIZE]: The uploaded file exceeds the upload_max_filesize directive in php.ini",
+	2=>"[UPLOAD_ERR_FORM_SIZE]: The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form",
+	3=>"[UPLOAD_ERR_PARTIAL]: The uploaded file was only partially uploaded",
+	4=>"[UPLOAD_ERR_NO_FILE]: No file was uploaded",
+	6=>"[UPLOAD_ERR_NO_TMP_DIR]: Missing a temporary folder",
+	7=>"[UPLOAD_ERR_CANT_WRITE]: Failed to write file to disk",
+	8=>"[UPLOAD_ERR_EXTENSION]: File upload stopped by extension"
+);
 // upload file from local
 
 function getData_fromLocal() {
@@ -15,11 +25,10 @@ function getData_fromLocal() {
 	$wdId        = getGSFileId_fromPath($wd);
 	
 	// check source file/s
-	if(empty($_FILES)){
+	if(!isset($_FILES['file'])){
 		$_SESSION['errorData']['upload'][]="ERROR: Receiving blank. Please select a file to upload";
 		die("ERROR: Recieving blank. Please select a file to upload0");
 	}
-
 	// check target directory
 	if ( $wdId == "0" || !is_dir($wdP) ){
 		$_SESSION['errorData']['upload'][]="Target server directory '".basename($wd)."' does not exist. Please, login again.";
@@ -32,36 +41,31 @@ function getData_fromLocal() {
 	for ($i = 0; $i < count($_FILES['file']['tmp_name']); ++$i) {
 		$rfnNew = "$wdP/".cleanName($_FILES['file']['name']);
 		$size   = $_FILES['file']['size'];
+		logger("UPLOADING LOCAL. Tmp name=".$_FILES['file']['tmp_name']." Size=$size Target= $rfnNew");
 
 		// check upload errors
 		if ($_FILES['file']['error'] ) { 
         		$code = $_FILES['file']['error'];
-		    	$errMsg = array(
-				0=>"[UPLOAD_ERR_OK]:  There is no error, the file uploaded with success",
-				1=>"[UPLOAD_ERR_INI_SIZE]: The uploaded file exceeds the upload_max_filesize directive in php.ini",
-				2=>"[UPLOAD_ERR_FORM_SIZE]: The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form",
-				3=>"[UPLOAD_ERR_PARTIAL]: The uploaded file was only partially uploaded",
-				4=>"[UPLOAD_ERR_NO_FILE]: No file was uploaded",
-				6=>"[UPLOAD_ERR_NO_TMP_DIR]: Missing a temporary folder",
-				7=>"[UPLOAD_ERR_CANT_WRITE]: Failed to write file to disk",
-				8=>"[UPLOAD_ERR_EXTENSION]: File upload stopped by extension"
-			);
+			logger("UPLOADING LOCAL - ERROR:".$_FILES['file']['error']." ".$errMsg[$code]);
 			if(isset($errMsg[$code])){
 				$_SESSION['errorData']['upload'][] = "ERROR [code $code] ".$errMsg[$code];
-				die("ERROR [code $code] ".$errMsg[$code]."0");
+				redirect($GLOBALS['BASEURL']."/workspace/");
+				die("ERROR [code $code] ".$errMsg[$code]." 0");
 			}else{
-				$_SESSION['errorData']['upload'][] = "Unknown upload error";
+				$_SESSION['errorData']['upload'][] = "Unknown upload error (code = $code)";
+				redirect($GLOBALS['BASEURL']."/workspace/");
 				die("Unknown upload error 0");
 			}
 		}
-
 		// check file size and space
 		if (!$size || $size == 0 ){
 			$_SESSION['errorData']['upload'][] = "ERROR: ".$_FILES['file']['name']." file size is zero";
+			logger("UPLOADING LOCAL - ERROR: ".$_FILES['file']['name']." file size is zero 0");
 			die("ERROR: ".$_FILES['file']['name']." file size is zero 0");
 		}
 		if ( $size > return_bytes(ini_get('upload_max_filesize')) || $size > return_bytes(ini_get('post_max_size')) ){
 			$_SESSION['errorData']['upload'][] = "ERROR: File size $size larger than UPLOAD_MAX_FILESIZE (".ini_get('upload_max_filesize').") ";
+			logger("UPLOADING LOCAL - ERROR: File size $size larger than UPLOAD_MAX_FILESIZE (".ini_get('upload_max_filesize').") 0");
 			die("ERROR: File size $size larger than UPLOAD_MAX_FILESIZE (".ini_get('upload_max_filesize').") 0");
 		}
 		$usedDisk     = (int)getUsedDiskSpace();
@@ -88,10 +92,13 @@ function getData_fromLocal() {
 			}
 		}
 
+		logger("UPLOADING LOCAL - tmp_name = ".$_FILES['file']['tmp_name']);
 
 		//actual upload
 		if ( $_FILES['file']['tmp_name'] ){ //  $_FILES['file']['tmp_name'][$i]
+			logger("UPLOADING LOCAL - Starting move_uploaded_file");
 			$resp = move_uploaded_file($_FILES['file']['tmp_name'], $rfnNew); // $_FILES['file']['tmp_name'][$i]
+			logger("UPLOADING LOCAL - Done"); 
 		}
 
 		if (is_file($rfnNew)){
@@ -169,6 +176,7 @@ function prepare_getData_fromURL($url,$outdir,$referer,$meta=array()) {
     //parse out username and password from URL, if any
     $user=0;
     $pass=0;
+
     $url_withCredentials=0;
     if (preg_match('/(.*\/\/)(.*):(.*)@(.*)/',$url,$m)){
         $user = $m[2];
@@ -188,7 +196,6 @@ function prepare_getData_fromURL($url,$outdir,$referer,$meta=array()) {
         curl_setopt($ch, CURLOPT_USERPWD, "$user:$pass");
     }
     $curl_data = curl_exec($ch);
-
     //status
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     if ($status != 200 && !preg_match('/^3/',$status) ){
@@ -215,7 +222,7 @@ function prepare_getData_fromURL($url,$outdir,$referer,$meta=array()) {
     $usedDisk     = (int)getUsedDiskSpace();
     $diskLimit    = (int)$_SESSION['User']['diskQuota'];
     if ( $size == 0 ) {
-        $msg = "Resource URL ('".$url."') is pointing to an empty resource (size = 0)";
+        $msg = "Resource URL ['".$url."'] is pointing to an empty resource (size = 0)";
         if($referer == "die"){die($msg);}else{$_SESSION['errorData']['Error'][] =$msg; redirect($referer);}
     }
 
@@ -591,7 +598,6 @@ function getData_fromRepository_ToPublic($params=array()) { //url, untar, data_t
     if ($size == 0 ) {
         $_SESSION['errorData']['Error'][] = "Resource URL ('$url') is pointing to an empty resource (size = 0)";
         redirect($_SERVER['HTTP_REFERER']);
-
     }
     if ($size > ($diskLimit-$usedDisk) ) {
         $_SESSION['errorData']['Error'][] = "Cannot import file. There will be not enough space left in the workspace (size = $size)";
@@ -729,13 +735,13 @@ function process_URL($url){
 
     $response = array(
 		"status"        => false,
-		"size"          => 0,
+		"size"          => -1,
 		"filename"      => false,
 		"effective_url" => false);
 
     // get URL header
     $headers_data = get_headers($url,1);
-    var_dump($headers_data);
+    //var_dump($headers_data);
    
     //check server and status
     if ($headers_data === false){
@@ -750,7 +756,10 @@ function process_URL($url){
     $response['status'] = (preg_match("/^HTTP.* (\d\d\d) /",$headers_data[0],$m)? $m[1] : $response['status']);
 
     // grabs filename
-    $response['filename'] = (isset($headers_data['Content-Disposition']) && preg_match('/filename=(?<f>[^\s]+|\x22[^\x22]+\x22)\x3B?.*$/m',$headers_data['Content-Disposition'],$m)? $m[1] : $response['filename']);
+    $response['filename'] = (isset($headers_data['Content-Disposition']) && preg_match('/filename=(?<f>[^\s]+|\x22[^\x22]+\x22);?.*$/m',$headers_data['Content-Disposition'],$m)? $m[1] : $response['filename']);
+    $response['filename']= trim($response['filename'],";");
+    $response['filename']= trim($response['filename'],"\"");
+    $response['filename']= trim($response['filename'],"'");
     $response['size'] = (isset($headers_data['Content-Disposition']) && preg_match("/filename=.+/",$headers_data['Content-Disposition']) && $headers_data['Content-Length']? $headers_data['Content-Length'] : $response['size']);
     
 
@@ -800,6 +809,7 @@ function getData_fromRepository($params=array()) { //url, repo, id, taxon, filen
     $datatype = (isset($params['data_type'])&& $params['data_type']? $params['data_type']:"");
     $filetype = (isset($params['file_type'])&& $params['file_type']? $params['file_type']:"");
     $descrip  = (isset($params['description'])&& $params['description']? $params['description']:"");
+    $repo     = (isset($params['repo'])&& $params['repo']? $params['repo']:"");
         
     //validate URL via HEAD
 /*
@@ -815,8 +825,7 @@ function getData_fromRepository($params=array()) { //url, repo, id, taxon, filen
         redirect($_SERVER['HTTP_REFERER']);
     }
 */
-    $url_data = process_URL($url);
-
+    $url_data = process_URL($url); 
     //status
     //$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $status = $url_data['status'];
@@ -840,9 +849,9 @@ function getData_fromRepository($params=array()) { //url, repo, id, taxon, filen
     $usedDisk  = (int)getUsedDiskSpace();
     $diskLimit = (int)$_SESSION['User']['diskQuota'];
     if ($size == 0 ) {
-        $_SESSION['errorData']['Error'][] = "Resource URL ('$url') is pointing to an empty resource (size = 0)";
+	exit("size 0 error !");
+        $_SESSION['errorData']['Error'][] = "Resource URL ['$url'] is pointing to an empty resource (size = 0)";
         redirect($_SERVER['HTTP_REFERER']);
-
     }
     if ($size > ($diskLimit-$usedDisk) ) {
         $_SESSION['errorData']['Error'][] = "Cannot import file. There will be not enough space left in the workspace (size = $size)";
@@ -918,7 +927,7 @@ function getData_fromRepository($params=array()) { //url, repo, id, taxon, filen
 
         // setting tool	arguments. Tool is responsible to create outputs in the output_dir
         $toolArgs  = array(
-                "url"    => $url,   
+                "url"    => "\"$url\"",   
                 "output" => $fnP); 
 
         // setting tool outputs. Metadata will be saved in DB during tool output_file registration
@@ -953,12 +962,10 @@ function getData_fromRepository($params=array()) { //url, repo, id, taxon, filen
 	);
 	if (isset($params['oeb_dataset_id'])){ $fileOut['meta_data']["oeb_dataset_id"] = $params['oeb_dataset_id'];}
 	if (isset($params['oeb_community_ids'])){ $fileOut['meta_data']["oeb_community_ids"] = $params['oeb_community_ids'];}
-
         $toolOuts = Array ("output_files" => Array($fileOut));
         
         // setting logName
-        $logName = basename($fnP). ".log";
-    
+	$logName = basename($fnP). ".log"; 
         //calling internal tool
         $pid = launchToolInternal($toolId,$toolInputs,$toolArgs,$toolOuts,$output_dir,$logName);
 
