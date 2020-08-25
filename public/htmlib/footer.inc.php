@@ -65,7 +65,12 @@
     </div>
 </div>
 
-<div class="mt-cookie-consent-bar mt-cookie-consent-bar-light">
+<!--<div style=" position: fixed; bottom: 0; z-index: 10101; padding: 20px 45px; width: 100%; background: slategray; color: #fff; left: 0; right: 0; font-size:1.6em; font-weight:bold" >
+        <div> Scheduled mantainance: This site is going to be offline from August 3rd at 14:00h to August 4th at 20:00h. Sorry for the inconveniences
+        </div>
+</div>-->
+
+<div class="mt-cookie-consent-bar mt-cookie-consent-bar-light" style="bottom:70px;">
     <div class="mt-cookie-consent-bar-holder">
         <div class="mt-cookie-consent-bar-content"> This website uses cookies to ensure you get the best experience on our website.
             <a href="cookies/">Our Cookie Policy</a>
