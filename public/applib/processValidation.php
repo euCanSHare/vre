@@ -81,6 +81,7 @@ switch ($_REQUEST['op']) {
     }
     $_SESSION['validation'][$fn]['format']=$_REQUEST['format'];
 
+    $required_metadata =getFeaturesFromDataType($_REQUEST['data_type'],$_REQUEST['format']);
 
     // check validation actions to perfome on file
     switch ( $_REQUEST['format'] ) {
@@ -88,7 +89,7 @@ switch ($_REQUEST['op']) {
 	case 'BAM':
         if (!isset($_REQUEST['refGenome']) || !isset($_REQUEST['paired']) || !isset($_REQUEST['sorted'])){
             $resp['msg']="Missing compulsory fields. Please, especify: reference genome, sorted/unsorted and paired/single.</br>";
-        	$resp['state'] = 0;
+            $resp['state'] = 0;
             break;
         }
         if (($_REQUEST['sorted']!= "sorted" && $_REQUEST['sorted']!= 1) && (!isset($fileMeta['sorted']) || $fileMeta['sorted']=="unsorted")){
@@ -109,21 +110,21 @@ switch ($_REQUEST['op']) {
         }
 	    break;
 
-    case 'BEDGRAPH';
+	case 'BEDGRAPH';
 	case 'WIG':
 	case 'BED':
-            if (!isset($_REQUEST['refGenome'])){
+            if ($required_metadata['assembly']===true and !isset($_REQUEST['refGenome'])){
                 $resp['msg']="Missing compulsory fields. Please, specify reference genome.</br>";
                 $resp['state'] = 0;
                 break;
             }
             //$resp['msg'] = "File will be converted to BW";
-	        //$_SESSION['validation'][$fn]['action']["convert"]=0; 
-	        break;
+	    //$_SESSION['validation'][$fn]['action']["convert"]=0; 
+	    break;
 
     case 'GFF':
 	case 'GFF3':
-            if (!isset($_REQUEST['refGenome'])){
+            if ($required_metadata['assembly']===true and !isset($_REQUEST['refGenome'])){
                 $resp['msg']="Missing compulsory fields. Please, specify reference genome.</br>";
         		$resp['state'] = 0;
                 break;
@@ -133,7 +134,7 @@ switch ($_REQUEST['op']) {
     default:
             # other formats accepted as uploaded
     	    $resp['msg']   = "Metadata file is valid</br>";
-	        $resp['state'] = 1;
+	    $resp['state'] = 1;
             break;
     }
 
