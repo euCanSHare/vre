@@ -85,8 +85,6 @@ switch(pathinfo($_SERVER['PHP_SELF'])['filename']){
 	case 'eush_projects':
 	case 'eush_subjects':
 	case 'eush_experiments':
-	case 'eush_ega':
-	case 'eush_ega_datasets':
 	case 'datasets': ?>
 		<script src="assets/global/scripts/datatable.js" type="text/javascript"></script>
 		<script src="assets/global/plugins/datatables/datatables.min.js" type="text/javascript"></script>
@@ -303,14 +301,6 @@ switch(pathinfo($_SERVER['PHP_SELF'])['filename']){
 		<script src="assets/pages/scripts/table-datasets.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
 		<script src="assets/pages/eush_js/eush_experiments.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
 		<?php break; 
-	case 'eush_ega': ?>
-		<script src="assets/pages/scripts/table-datasets.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
-		<script src="assets/pages/eush_js/eush_ega.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
-		<?php break;
-	case 'eush_ega_datasets': ?>
-		<script src="assets/pages/scripts/table-datasets.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
-		<script src="assets/pages/eush_js/eush_ega_datasets.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
-		<?php break;
 	case 'datasets': ?>
 		<script src="assets/pages/scripts/table-datasets.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
 		<?php break; 
@@ -416,8 +406,6 @@ switch(pathinfo($_SERVER['PHP_SELF'])['filename']){
 	case 'eush_projects':
 	case 'eush_subjects':
 	case 'eush_experiments':
-	case 'eush_ega':
-	case 'eush_ega_datasets':
 	case 'datasets':
 	case 'usrProfile':
 	case 'restoreLink':
