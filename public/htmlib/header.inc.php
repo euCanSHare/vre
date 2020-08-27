@@ -88,6 +88,8 @@
 		case 'myNewTools':
 		case 'dashboard':
 		case 'eush_projects':
+		case 'eush_ega':
+		case 'eush_ega_datasets':
 		case 'datasets':
 		case 'logs': ?>
 			<link href="assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.css" rel="stylesheet" type="text/css" />
@@ -217,6 +219,8 @@
 		case 'eush_projects':
 		case 'eush_subjects':
 		case 'eush_experiments':
+		case 'eush_ega':
+		case 'eush_ega_datasets':
 		case 'sampleDataList':
 		case 'dataFromTxt':
 		case 'dataFromID':
