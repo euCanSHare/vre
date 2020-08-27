@@ -14,6 +14,29 @@ function getUser($userId) {
 }
 
 // TODO: For next meeting demo we will show only 1 specific project. Marcel Koek recommendation.
+function getEGADatasets($var){
+	$response="{}";
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, 'https://ega-archive.org/metadata/v2/datasets?queryBy=file&queryId='.$var.'');
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        $response = curl_exec($curl);
+        $response = json_encode($response);
+        curl_close($curl);
+	return $response;
+}
+
+function getEGAFiles($var){
+	$response="{}";
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, 'https://ega-archive.org/metadata/v2/files?queryBy=dataset&queryId='.$var.'');
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        $response = curl_exec($curl);
+        $response = json_encode($response);
+        curl_close($curl);
+	return $response;
+}
+
+// TODO: For next meeting demo we will show only 1 specific project. Marcel Koek recommendation.
 function getEuroBioImagingProjects(){
 	$response="{}";
         $curl = curl_init();
