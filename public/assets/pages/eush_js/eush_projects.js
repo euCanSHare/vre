@@ -36,6 +36,9 @@ $(document).ready(function() {
                         name = array[i]["name"]
                         // Project PI
                         pi = array[i]["pi"]
+                        if(array[i]["project_access"] !== "public") {
+                            continue
+                        }
                         // Project Access
                         access = array[i]["project_access"]
                     
