@@ -3,6 +3,7 @@
 //  test if a given file_id is a directory
  
 function isGSDirBNS($col, $fn) {
+	logger("INFO: isGSDirBNS -> $col -> FINDEONE _id=>$fn 'files'=>\$exists");
 	$file = $col->findOne(array('_id'  => $fn,
 			'files' => array('$exists' => true)
 		   )
@@ -52,6 +53,7 @@ function getGSFilesFromDir($dataSelection=Array(),$onlyVisible=0){
     // query directory document
 
 
+    logger("INFO: getGSFilesFromDir->filesCOL.FINDONE \"".json_encode($dataSelection)."\"");
     $dirData = $GLOBALS['filesCol']->findOne($dataSelection);
 
     if (!isset($dirData['_id'])){
@@ -72,11 +74,13 @@ function getGSFilesFromDir($dataSelection=Array(),$onlyVisible=0){
 
     foreach ($dirData['files'] as $d) {
 
-        if ($onlyVisible)
-		    $fData = getGSFile_filteredBy($d, array('visible'=> Array('$ne'=>false)) );	
-	    else
-	    	    $fData = getGSFile_fromId($d);
-
+        if ($onlyVisible){
+    	    logger("INFO: getGSFilesFromDir: getGSFile_filteredBy \"".json_encode($d)."\" + {visible:ne:false}");
+	    $fData = getGSFile_filteredBy($d, array('visible'=> Array('$ne'=>false)) );	
+	}else{
+    	    logger("INFO: getGSFilesFromDir: getGSFile_fromId \"".json_encode($d)."\"");
+	    $fData = getGSFile_fromId($d);
+	}
 	if ( $fData['path'] == $_SESSION['User']['id'] ){ // home file
             continue;
         }
@@ -89,11 +93,13 @@ function getGSFilesFromDir($dataSelection=Array(),$onlyVisible=0){
 	if (isset($fData['files']) && count($fData['files'])>0 ){
 		foreach ($fData['files'] as $dd) {
 
-	    		if ($onlyVisible)
+	    		if ($onlyVisible){
+    	    		    logger("INFO: getGSFilesFromDir: getGSFile_filteredBy \"".json_encode($dd)."\" + {visible:ne:false}");
 			    $ffData = getGSFile_filteredBy($dd, array('visible'=> Array('$ne'=>false)) );	
-			else
+			}else{
+    	    	    	     logger("INFO: getGSFilesFromDir: getGSFile_fromId \"".json_encode($dd)."\"");
 	    	   	     $ffData = getGSFile_fromId($dd);
-
+			}
 			if (is_object($ffData['mtime']))
 				$ffData['mtime'] = $ffData['mtime']->toDateTime()->format('U');
 	    		$files[$ffData['_id']] = $ffData; 
@@ -109,8 +115,10 @@ function getGSFilesFromDir($dataSelection=Array(),$onlyVisible=0){
 function getGSFileId_fromPath($fnPath,$asRoot=0) {
 	$col = $GLOBALS['filesCol'];
 	if ($asRoot){
+    		logger("INFO: getGSFileId_fromPath -> $col -> FINDONE path=>$fnPath");
 		$file = $col->findOne(array('path'  => $fnPath));
 	}else{
+    		logger("INFO: getGSFileId_fromPath -> $col -> FINDONE path=>$fnPath owner=>user");
 		$file = $col->findOne(array('path'  => $fnPath,
 				    'owner' => $_SESSION['User']['id']
 		));
@@ -122,13 +130,62 @@ function getGSFileId_fromPath($fnPath,$asRoot=0) {
 	}
 }
 
-//  return File (entire, onlyMetadata, onlyData) from file_id
-
 function getGSFile_fromId($fn,$filter="",$asRoot=0) {
-    if ($asRoot)
+    if ($asRoot){
+        $fileQuery = array('_id' => $fn);
+    }else{
+	$fileQuery = array('_id' => $fn, 'owner' => $_SESSION['User']['id']);
+    }
+    $ops = array(
+                array('$match' => $fileQuery),
+                array('$lookup'=> array(
+                                     'from'        =>'filesMetadata',
+                                     'localField'  =>'_id',
+                                     'foreignField'=>'_id',
+                                     'as'          => 'meta'
+                                     )  
+                        ),
+                array('$unwind' => array('path' => '$meta'))
+                );
+# $d = $GLOBALS['filesCol']->aggregate($ops);
+ logger("INFO: getGSFile_fromId -> files+filesMeta AGGREGATE _id=>$fn");
+ $data = iterator_to_array( $GLOBALS['filesCol']->aggregate($ops), false );
+
+ if (!$data || count($data) == 0 || count($data[0]) == 0)
+	 return 0;
+
+ $data = $data[0];
+ 
+ //  return File (entire, onlyMetadata, onlyData) from file_id
+	    
+ if($filter == "onlyMetadata"){
+        if (count($data['meta']) == 0)
+		return 0;
+	else
+        	return $data['meta'];
+    
+ }elseif($filter == "onlyData"){
+     unset($data['meta']);
+     return $data;
+    
+ }else{
+    $meta = $data['meta'];
+    unset($data['meta']);
+    return array_merge($data,$meta);
+
+ }
+
+}
+
+function getGSFile_fromId_DEPRECATED($fn,$filter="",$asRoot=0) {
+    if ($asRoot){
+    	logger("INFO: getGSFile_fromId -> filesCOL.FINDONE _id=>$fn");
         $fileData = $GLOBALS['filesCol']->findOne(array('_id' => $fn) );
-    else
-    	$fileData = $GLOBALS['filesCol']->findOne(array('_id' => $fn, 'owner' => $_SESSION['User']['id']));
+    }else{
+    	logger("INFO: getGSFile_fromId -> filesCOL.FINDONE _id=>$fn owner=>user");
+	$fileData = $GLOBALS['filesCol']->findOne(array('_id' => $fn, 'owner' => $_SESSION['User']['id']));
+    }
+    logger("INFO: getGSFile_fromId -> filesMetaCOL FINDONE _id=>$fn");
     $fileMeta = $GLOBALS['filesMetaCol']->findOne(array('_id' => $fn));
 
     if($filter == "onlyMetadata"){
@@ -154,18 +211,20 @@ function getGSFile_fromId($fn,$filter="",$asRoot=0) {
 
 function getGSFile_filteredBy($fn,$filters) {
 
-	$filter_filesCol     = Array('_id' => $fn);
-	$filter_filesMetaCol = Array('_id' => $fn);
-	foreach ($filters as $attr => $v){
-		if (in_array($attr, Array('owner', 'size', 'path', 'mtime', 'parentDir', 'expiration','project')) )
-			$filter_filesCol[$attr] = $v;
-		else
-			$filter_filesMetaCol[$attr] = $v;
-	}	
+    $filter_filesCol     = Array('_id' => $fn);
+    $filter_filesMetaCol = Array('_id' => $fn);
+    foreach ($filters as $attr => $v){
+	if (in_array($attr, Array('owner', 'size', 'path', 'mtime', 'parentDir', 'expiration','project')) )
+		$filter_filesCol[$attr] = $v;
+	else
+		$filter_filesMetaCol[$attr] = $v;
+    }	
+    logger("INFO: getGSFile_filteredBy -> filesCOL.FINDONE \"".json_encode($filter_filesCol)."\"");
     $fileData = $GLOBALS['filesCol']->findOne($filter_filesCol);
+    logger("INFO: getGSFile_filteredBy -> filesMetaCOL.FINDONE \"".json_encode($filter_filesMetaCol)."\"");
     $fileMeta = $GLOBALS['filesMetaCol']->findOne($filter_filesMetaCol);
-	$existMeta= $GLOBALS['filesMetaCol']->findOne(Array('_id' => $fn));
-
+    logger("INFO: getGSFile_filteredBy -> filesMetaCOL.FINDONE \" {_id:$fn} \"");
+    $existMeta= $GLOBALS['filesMetaCol']->findOne(Array('_id' => $fn));
 	if (empty($fileData))
 		return 0;
 

@@ -530,31 +530,31 @@ function printTable($filesAll=Array() ) {
 				}
 		if (isset($r['pending'])){
 					if(basename($r['path']) == "uploads"){
-						print parseTemplate(formatData($r), getTemplate('/TreeTblworkspace/TR_folder_uploads.htm'));
+						print parseTemplate(formatData($r,"minimal"), getTemplate('/TreeTblworkspace/TR_folder_uploads.htm'));
 					}elseif(basename($r['path']) == "repository"){
-						print parseTemplate(formatData($r), getTemplate('/TreeTblworkspace/TR_folder_repository.htm'));
+						print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_folder_repository.htm'));
 					}else{
-						print parseTemplate(formatData($r), getTemplate('/TreeTblworkspace/TR_folderPending.htm'));
+						print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_folderPending.htm'));
 					}
 				}elseif(basename($r['path']) == "uploads"){
-					print parseTemplate(formatData($r), getTemplate('/TreeTblworkspace/TR_folder_uploads.htm'));
+					print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_folder_uploads.htm'));
 				}elseif(basename($r['path']) == "repository"){
-					print parseTemplate(formatData($r), getTemplate('/TreeTblworkspace/TR_folder_repository.htm'));
+					print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_folder_repository.htm'));
 				}elseif(count($r['files']) == 0){
-					print parseTemplate(formatData($r), getTemplate('/TreeTblworkspace/TR_folder_empty.htm'));
+					print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_folder_empty.htm'));
 				}else{
-					print parseTemplate(formatData($r), getTemplate('/TreeTblworkspace/TR_folder.htm'));
+					print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_folder.htm'));
 		}
 	    // is job
 			}elseif(isset($r['pending'])){
-					print parseTemplate(formatData($r), getTemplate('/TreeTblworkspace/TR_filePending.htm'));
+					print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_filePending.htm'));
 		    $autorefresh=1;
 	    // is file
 			}elseif(isset($r['_id'])){
 					if ($r['validated']){
-						print parseTemplate(formatData($r), getTemplate('/TreeTblworkspace/TR_file.htm'));
+						print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_file.htm'));
 					}else{
-						print parseTemplate(formatData($r), getTemplate('/TreeTblworkspace/TR_fileDisabled.htm'));
+						print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_fileDisabled.htm'));
 					}
 			}else{
 				//empty mongo entry;
@@ -598,13 +598,13 @@ function printLastJobs($filesAll=Array() ) {
 					//$wehavejobs = false;
 					//print parseTemplate(formatData($r), getTemplate('/TreeTblworkspace/TR_folder_uploads.htm'));
 				}elseif(!strpos($r['files'][0], "dummy")){
-					print parseTemplate(formatData($r), getTemplate('/LastJobsworkspace/LJ_folder.htm'));
+					print parseTemplate(formatData($r, "minimal"), getTemplate('/LastJobsworkspace/LJ_folder.htm'));
 					$wehavejobs = true;
 					
 				}
 			}elseif(isset($r['pending'])){
 				if(basename($r['path']) != "repository") {
-			print parseTemplate(formatData($r), getTemplate('/LastJobsworkspace/LJ_folderPending.htm'));
+			print parseTemplate(formatData($r, "minimal"), getTemplate('/LastJobsworkspace/LJ_folderPending.htm'));
 						$wehavejobs = true;
 					}
 			}elseif(isset($r['_id'])){
@@ -703,7 +703,7 @@ function getToolsByDT($data_type, $status = 1) {
 }
 
 
-function formatData($data) {
+function formatData($data, $outformat="full") {
 		//_id id_URL
 		if (!isset($data['_id']))
 			return $data;
@@ -993,7 +993,7 @@ function formatData($data) {
 
 		}
 		//input_files
-		if (isset($data['input_files'])){
+		if ($outformat!= "minimal" && isset($data['input_files'])){
 			$ins =$data['input_files'];
 			$data['input_files']="<tr><td>Input files:</td><td>";
 			if (count($ins)){
