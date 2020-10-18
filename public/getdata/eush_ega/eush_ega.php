@@ -34,15 +34,19 @@ require "../../htmlib/js.inc.php"; ?>
                         </li>
                         <li>
                             <span>EGA</span>
+                            <i class="fa fa-circle"></i>
+                        </li>
+                        <li>
+                            <a href="getdata/eush_ega/eush_ega.php">Datasets</a>
                         </li>
                     </ul>
                 </div>
                 <!-- END PAGE BAR -->
 
                 <!-- BEGIN PAGE TITLE-->
-                <h1 class="page-title"> EGA: Files
+                <h1 class="page-title"> Central EGA outbox  &nbsp;&mdash;&nbsp; Datasets<br/><br/>
+                <small> EGA datasets accessible through your EGA account </small>
                 </h1>
-                <p> Accessible EGA files </p>
                 <!-- END PAGE TITLE -->
                 <!-- END PAGE HEADER -->
 
@@ -51,7 +55,7 @@ require "../../htmlib/js.inc.php"; ?>
                 <div class="row">
                         <div class="col-md-12">
                         <?php
-                        $error_data = false;
+			$error_data = false;
                         if ($_SESSION['errorData']) {
                             $error_data = true;
                       

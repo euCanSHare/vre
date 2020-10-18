@@ -34,14 +34,22 @@ require "../../htmlib/js.inc.php"; ?>
                         </li>
                         <li>
                             <span>EGA</span>
+                            <i class="fa fa-circle"></i>
+                        </li>
+                        <li>
+			    <a href="getdata/eush_ega/eush_ega.php">Datasets</a>
+                            <i class="fa fa-circle"></i>
+                        </li>
+                        <li>
+                            <span>Files</span>
                         </li>
                     </ul>
                 </div>
                 <!-- END PAGE BAR -->
 
-                <!-- BEGIN PAGE TITLE-->
-                <h1 class="page-title"> EGA: Datasets
-                    <small> Datasets description </small>
+		<!-- BEGIN PAGE TITLE-->
+                <h1 class="page-title"> Central EGA Outbox  &nbsp;&mdash;&nbsp; Files<br/><br/>
+                    <small> EGA DATASET : <?php echo $_REQUEST['ds_id'];?></small>
                 </h1>
                 <!-- END PAGE TITLE -->
                 <!-- END PAGE HEADER -->
