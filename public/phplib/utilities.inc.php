@@ -576,7 +576,7 @@ function prepMetadataResult($meta,$fnPath=0,$lastjob=Array() ){
                         $fnCore = preg_replace("/.$ext/i","",basename($fnPath));
                         $fnCore = preg_replace("/^.*_/","",$fnCore);
                 }
-                $reObj = new MongoRegex("/".$_SESSION['User']['id'].".*".$fnCore."/i");
+		$reObj = new \MongoDB\BSON\MongoRegex($_SESSION['User']['id'].".*".$fnCore);
                 $relatedBAMS = $GLOBALS['filesMetaCol']->find(array('path'  => $reObj));
                 if (!empty($relatedBAMS)){
                        $relatedBAMS->next();
@@ -771,26 +771,29 @@ function post($data,$url,$headers=array(),$auth_basic=array()){
 // HTTP get
 function get($url,$headers=array(),$auth_basic=array()){
 
-		$c = curl_init();
+	$c = curl_init();
         curl_setopt($c, CURLOPT_URL, $url);
         curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
-        if (isset($_SERVER['HTTP_USER_AGENT'])){                      curl_setopt($c, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);}
-        if (count($headers)){                                         curl_setopt($c, CURLOPT_HTTPHEADER, $headers);}
-        if (isset($auth_basic['user']) && isset($auth_basic['pass'])){curl_setopt($c, CURLOPT_USERPWD, $auth_basic['user'].":".$auth_basic['pass']);}
+	if (isset($_SERVER['HTTP_USER_AGENT'])){
+		curl_setopt($c, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);}
+	if (count($headers)){
+		curl_setopt($c, CURLOPT_HTTPHEADER, $headers);}
+	if (isset($auth_basic['user']) && isset($auth_basic['pass'])){
+		curl_setopt($c, CURLOPT_USERPWD, $auth_basic['user'].":".$auth_basic['pass']);}
             
-		$r = curl_exec ($c);
-		$info = curl_getinfo($c);
+	$r = curl_exec ($c);
+	$info = curl_getinfo($c);
 
-		if ($r === false){
-			$errno = curl_errno($c);
-			$msg = curl_strerror($errno);
-            $err = "GET call failed. Curl says: [$errno] $msg";
-		    $_SESSION['errorData']['Error'][]=$err;	
-			return array(0,$info);
-		}
-		curl_close($c);
+	if ($r === false){
+		$errno = curl_errno($c);
+		$msg = curl_strerror($errno);
+		$err = "GET call failed. Curl says: [$errno] $msg";
+		$_SESSION['errorData']['Error'][]=$err;	
+		return array(0,$info);
+	}
+	curl_close($c);
 
-		return array($r,$info);
+	return array($r,$info);
 }
 
 // HTTP put
@@ -823,7 +826,7 @@ function put($data,$url,$headers=array(),$auth_basic=array()){
 }
 
 function is_url($url){
-    $regex = "((https?|ftps?)\:\/\/)?"; 
+    $regex = "((https?|ftps?|sftp|ssh|file)\:\/\/)?"; 
     $regex .= "([a-z0-9+!*(),;?&=\$_.-]+(\:[a-z0-9+!*(),;?&=\$_.-]+)?@)?"; // User and Pass 
     $regex .= "([a-z0-9-.]*)\.([a-z]{2,3})"; // Host or IP 
     $regex .= "(\:[0-9]{2,5})?"; // Port 
@@ -836,6 +839,14 @@ function is_url($url){
         return false;
     
     //return filter_var($url, FILTER_VALIDATE_URL);
+}
+
+function is_urn($urn){
+    $regex = "^urn:[a-z0-9][a-z0-9-]{0,31}:.*";
+    if(preg_match("/^$regex$/i", $urn))
+	    return true;
+    else
+	    return false;
 }
 
 function fromTaxonID2TaxonName($taxon_id){

@@ -371,7 +371,7 @@ function  getData_wget_asyncron($toolArgs,$toolOuts,$output_dir,$referer){
             'description' => $descrip
             );
     
-        $fnId = uploadGSFileBNS_fromURL($params['url'],$wd, $insertData,$metaData,0);
+        $fnId = uploadGSFileBNS_fromURI($params['url'],$wd, $insertData,$metaData,0);
     
         
         if ($fnId == "0"){
@@ -686,7 +686,7 @@ print "output  (file or folder) = $output\n";
 
         // setting tool output metadata. It will be registerd after tool execution
         if (!$descrip){
-		$descrip="Remote file extracted from <a target='_blank' href=\"$url\">$url</a>";
+		$descrip="Remote file extracted from $url";
 	}
         if (!$filetype){
 	        $filetypes = getFileTypeFromExtension($fileExtension);
@@ -731,7 +731,7 @@ print "output  (file or folder) = $output\n";
 }
 
 
-function process_URL($url){
+function process_URL($url,$basic_auth=0){
 
     $response = array(
 		"status"        => false,
@@ -739,97 +739,289 @@ function process_URL($url){
 		"filename"      => false,
 		"effective_url" => false);
 
-    // get URL header
+    // get URL headers
     $headers_data = get_headers($url,1);
-    //var_dump($headers_data);
+    //var_dump("<br/>______process URL __ HEADERS_DATA _______________<br/>",$headers_data);
    
     //check server and status
     if ($headers_data === false){
         $_SESSION['errorData']['Error'][] = "Resource URL ('$url') is not valid or unaccessible. Server not found";
-	return false;
+	return $response;
     }
-
-    // corrects url when 301/302 redirect(s) lead(s) to 200
-    $response['effective_url'] = (isset($headers_data['Location']) && preg_match("/^Location: (.+)$/",$headers_data['Location'],$m)? $m[1] : $url );
-
-    // grabs last code, in case of redirect(s):
     $response['status'] = (preg_match("/^HTTP.* (\d\d\d) /",$headers_data[0],$m)? $m[1] : $response['status']);
 
-    // grabs filename
-    $response['filename'] = (isset($headers_data['Content-Disposition']) && preg_match('/filename=(?<f>[^\s]+|\x22[^\x22]+\x22);?.*$/m',$headers_data['Content-Disposition'],$m)? $m[1] : $response['filename']);
-    $response['filename']= trim($response['filename'],";");
-    $response['filename']= trim($response['filename'],"\"");
-    $response['filename']= trim($response['filename'],"'");
-    $response['size'] = (isset($headers_data['Content-Disposition']) && preg_match("/filename=.+/",$headers_data['Content-Disposition']) && $headers_data['Content-Length']? $headers_data['Content-Length'] : $response['size']);
-    
 
-    $status = substr($headers[0], 9, 3);
-    if (!preg_match('/(200)/',$headers_data[0]) && !preg_match('/^3/',$status) ){
-        $_SESSION['errorData']['Error'][] = "Resource URL ('$url') is not valid or unaccessible. Status: $status";
-        redirect($_SERVER['HTTP_REFERER']);
-    }
-    //filename
-    /*
-    if (! $filename){
-    	if (preg_match('/^Content-Disposition: .*?filename=(?<f>[^\s]+|\x22[^\x22]+\x22)\x3B?.*$/m', $curl_data,$m)){
-        	$filename = trim($m['f'],' ";');
-    	}elseif (preg_match('/^Content-Length:\s*(\d+)/m', $curl_data,$m)){
-	        $hasLength = $m[1];
-        	if ($hasLength){
-	            $filename = basename($url);
-	        }
+    // if HTTP error code, try getting headers with CURL
+    if ($response['status'] > 301){ 
+
+        //validate URL via HEAD
+    	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+	curl_setopt($ch, CURLOPT_HEADER, TRUE);
+	curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+	//curl_setopt($ch, CURLOPT_NOBODY, TRUE); // forces method HEAD. Does not work with redirects
+	if ($basic_auth){
+		curl_setopt($curl, CURLOPT_USERPWD, $basic_auth);
 	}
+
+	$curl_data = curl_exec($ch);
+	$info      = curl_getinfo($ch);
+
+	if (!$curl_data){
+        	$_SESSION['errorData']['Error'][] = "Resource URL ('$url') cannot be verified. HEAD not accepted";
+        	return $response;
+    	}
+   	var_dump("<br/>___________AUTHED CURL DATA ___________<br/>",$curl_data);
+   	var_dump("<br/>___________AUTHED CURL INFO ___________<br/>",$info);
+
+	//compose parsed URL response from CURL-info data
+
+    	//corrects url when 301/302 redirect(s) lead(s) to 200
+    	$response['effective_url'] = ($info['redirect_url']? $info['redirect_url'] : $url );    	
+    	
+    	// grabs last code, in case of redirect(s):
+    	$response['status'] = $info['http_code'];
+
+	// grabs filename
+	$re = '/^Content-Disposition: .*?filename=(?<f>[^\s]+|\x22[^\x22]+\x22)\x3B?.*$/m';
+      	if (preg_match($re, $curl_data, $content)){
+		$filename = trim($content['f'],' ";');
+	    	$response['filename'] = (isset($filename)? $filename : basename($response['effective_url']) );
+
+	}
+	// grabs file size
+    	$response['size'] = ( $info['download_content_length']? $info['download_content_length'] : $response['size'] );
+
+	
+    //compose parsed URL response from getheaders data
+    }else{
+
+	// corrects url when 301/302 redirect(s) lead(s) to 200
+    	$response['effective_url'] = (isset($headers_data['Location']) && preg_match("/^Location: (.+)$/",$headers_data['Location'],$m)? $m[1] : $url );
+
+    	// grabs filename
+    	$response['filename'] = (isset($headers_data['Content-Disposition']) && preg_match('/filename=(?<f>[^\s]+|\x22[^\x22]+\x22);?.*$/m',$headers_data['Content-Disposition'],$m)? $m[1] : basename($response['effective_url']));
+    	$response['filename']= trim($response['filename'],";");
+    	$response['filename']= trim($response['filename'],"\"");
+    	$response['filename']= trim($response['filename'],"'");
+    
+    	// grabs file size
+    	$response['size'] = (isset($headers_data['Content-Disposition']) && preg_match("/filename=.+/",$headers_data['Content-Disposition']) && $headers_data['Content-Length']? $headers_data['Content-Length'] : $response['size']);
     }
-
-    if (!$filename){
-        $_SESSION['errorData']['Error'][] = "Resource URL ('$url') is not pointing to a valid filename";
-  0 redirect($_SERVER['HTTP_REFERER']);
-    }
-    //size
-    if ($size == 0 ) {
-        $_SESSION['errorData']['Error'][] = "Resource URL ('$url') is pointing to an empty resource (size = 0)";
-        redirect($_SERVER['HTTP_REFERER']);
-
-    }
-    if ($size > ($diskLimit-$usedDisk) ) {
-        $_SESSION['errorData']['Error'][] = "Cannot import file. There will be not enough space left in the workspace (size = $size)";
-        redirect($_SERVER['HTTP_REFERER']);
-    }*/
-
-    return $response;
-
+   return $response;
 }
 
 // import from Repository (URL) to user workspace
 
 function getData_fromRepository($params=array()) { //url, repo, id, taxon, filename, data_type
 
-    // get params
-    $url      = $params['url'];
+    // Get params
+    $url= (isset($params['url'])&& $params['url']? $params['url']:"");
+    $urn= (isset($params['urn'])&& $params['urn']? $params['urn']:"");
+
+    // optional params mapped to VRE metadata attributes
     $datatype = (isset($params['data_type'])&& $params['data_type']? $params['data_type']:"");
     $filetype = (isset($params['file_type'])&& $params['file_type']? $params['file_type']:"");
     $descrip  = (isset($params['description'])&& $params['description']? $params['description']:"");
-    $repo     = (isset($params['repo'])&& $params['repo']? $params['repo']:"");
-        
-    //validate URL via HEAD
-/*
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
-    curl_setopt($ch, CURLOPT_HEADER, TRUE);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 6);
-    //curl_setopt($ch, CURLOPT_NOBODY, TRUE); // forces method HEAD. Does not work with redirects
-    $curl_data = curl_exec($ch);
-    if (!$curl_data){
-        $_SESSION['errorData']['Error'][] = "Resource URL ('$url') cannot be verified. HEAD not accepted";
-        redirect($_SERVER['HTTP_REFERER']);
+    $size     = (isset($params['size']) && $params['size']? $params['size']:"");
+
+    // optional params not mapped directly
+    $repository = (isset($params['repository'])&& $params['repository']? $params['repository']:"");
+    $filename   = (isset($params['filename']) && $params['filename']?  $params['filename']:"");
+    $format     = (isset($params['format'])&& $params['format']? $params['format']:"");
+
+    // defs
+    $auth = 0;
+    $metadata_vre = array();
+
+    if (!$url && !$urn ){
+            $_SESSION['errorData']['Error'][]="Bad request. Cannot import remote resource. Either the 'url' or 'urn' parameters are expected";     
+            ###redirect($_SERVER['HTTP_REFERER']);
+            return 0;
     }
-*/
+
+    // IF URN GIVEN
+    // build effective URL  and 'repository'
+
+    if ($urn){
+        // parse and validate URN
+        if (is_array($urn)){
+                if (count($urn)>1){
+                    $_SESSION['errorData']['Warning'][]="More than one URN given for the remote resource. Only attempting to resolve the first: $urn";
+                }
+                $urn= $urn[0];
+        }
+        if (!is_urn($urn)){
+            $_SESSION['errorData']['Warning'][]="Cannot import remote resource. Invalid URN format: $urn";
+            ###redirect($_SERVER['HTTP_REFERER']);
+            return 0;
+        }
+        list($u,$u_namespace,$u_domain,$u_id) = explode(":",$urn,4);
+
+        if (!isset($GLOBALS['repositories'][$u_namespace])){
+                $_SESSION['errorData']['Error'][]="Bad request. '$u_namespace' is an unknown repository's type. Cannot build an effective URL from the given URN: $urn";
+                ###redirect($_SERVER['HTTP_REFERER']);
+                return 0;
+        }elseif(!isset($GLOBALS['repositories'][$u_namespace][$u_domain])){
+                $_SESSION['errorData']['Error'][]="Bad request. '$u_domain' is an unknown repository's server. Cannot build an effective URL from the given URN: $urn";
+                ###redirect($_SERVER['HTTP_REFERER']);
+                return 0;
+        }
+        // set up repository
+        $repo = $GLOBALS['repositories'][$u_namespace][$u_domain];
+
+        $repository = $u_domain;
+
+        // build URL according to URN-derivated repository type
+        switch ($u_namespace){
+                case 'nc':
+                        // query nextcloud to get remote file path
+                        $nc_file_path= nc_getURL_fromfileId($u_domain,$u_id);
+                        if (!$nc_file_path){
+                                $_SESSION['ErrorData']['Error'][]="Cannot import resource. Failing to query file '$u_id' on '$u_domain'. Not resolving URN '$urn' to a valid URL";
+                                ###redirect($_SERVER['HTTP_REFERER']);
+                                return 0;
+                        }
+                        // build URL from file path
+                        $url = "https://$u_domain/$nc_file_path";
+
+                        break;
+                default:
+                        $_SESSION['errorData']['Error'][]="Bad request. Sorry, '$u_namespace' is still an unsupported repository's type. Cannot build an effective URL from the given URN: $urn";
+                        ###redirect($_SERVER['HTTP_REFERER']);
+                        return 0;
+        }
+
+        if (!$url){
+            $_SESSION['ErrorData']['Error'][]="Cannot import resource. An error occurred while building the actual URL for repository '$repository'.";
+            redirect($_SERVER['HTTP_REFERER']);
+        }
+    }
+
+    // IF URL
+    // Set AUTH and VRE_METADATA from 'repository'
+    $repo_type = false;
+    if (!$repository){
+	$repository = parse_url($url, PHP_URL_SCHEME). "://".parse_url($url, PHP_URL_HOST);
+    }
+    array_walk($GLOBALS['repositories'], function($v, $k) use (&$repository,&$repo_type){ if (array_keys($v)[0] == $repository) {$repo_type = $k;} });
+
+    print "URL ??? --- $url<br/>";
+    print "REPOSITORY ??? --- $repository<br/>";
+    var_dump("<br/>TYPE ===>>>> ",$repo_type);
+
+    // Get URL headers
     $url_data = process_URL($url); 
+
+    if ($url_data['status'] == 200){
+	    $auth = -1; # open access data
+    }
+    
+    if ($repo_type){
+	$repo = $GLOBALS['repositories'][$repo_type][$repository];
+	var_dump("<br/>REPO ===>>>> ",$repo);
+
+    	// set 'auth' and 'vre_metadata'
+        switch ($repo_type){
+                case 'nc':
+			if (isset($repo['auth']) ) {
+				if ( $repo['auth']=="basic"){
+					// continue if URL data is open access
+					if ($auth == -1)
+						break;
+
+                                        // fetch nextcloud API credentials 
+                                        if (!isset($repo['credentials']) || !is_file($repo['credentials'])){
+                                                $_SESSION['ErrorData']['Error'][]="Cannot import resource. VRE repository '$repo_type:$repository' is missing its credentials.";
+                                                ###redirect($_SERVER['HTTP_REFERER']);
+                                                return 0;
+                                        }
+                                        $credentials = array();
+                                        $confFile = $repo['credentials'];
+                                        if (($F = fopen($confFile, "r")) !== FALSE) {
+                                            while (($data = fgetcsv($F, 1000, ";")) !== FALSE) {
+                                                foreach ($data as $a){
+                                                    $r = explode(":",$a);
+                                                    if (isset($r[1])){array_push($credentials,$r[1]);}
+                                                }
+                                            }
+                                            fclose($F);
+                                        }
+                                        if ($credentials[2] != $u_domain){
+                                                $_SESSION['errorData']['Error'][]="Credentials for VRE nextcloud storage '$repository' are invalid. Please, contact with the administrators";
+                                                ###redirect($_SERVER['HTTP_REFERER']);
+                                                return 0;
+                                        }
+                                        $auth = $credentials[0].":".$credentials[1];
+
+                                }else{
+                                        $_SESSION['ErrorData']['Error'][]="Cannot import resource. VRE Repository '$repo_type:$repository' has an unsupported 'auth' method (".$repo['auth'].").";
+                                        ###redirect($_SERVER['HTTP_REFERER']);
+                                        return 0;
+                                }
+                        }
+                        break;
+
+                case 'xnat':
+			if (isset($repo['auth']) ) {
+                              if ($repo['auth']=="basic"){
+					// continue if URL data is open access
+					if ($auth == -1)
+						break;
+
+                                        // fetch xnat API credentials 
+                                        if (!isset($repo['credentials']) || !isset($repo['credentials']['linked_accounts'])){
+                                                $_SESSION['ErrorData']['Error'][]="Cannot import resource. VRE repository '$repo_type:$repository' is missing its credentials. Expecting them within 'linked_accounts' key";
+                                                ###redirect($_SERVER['HTTP_REFERER']);
+                                                return 0;
+                                        }
+                                        $credentials = array();
+					$link_key = $repo['credentials']['linked_accounts'];
+					if (!isset($_SESSION['User']['linked_accounts'][$link_key]) ){
+						$_SESSION['errorData']['Error'][]="Credentials for 'XNAT.$link_key' ($repository) are not set. Please, configure them in 'My Profile  > Keys'.";
+                                                redirect($_SERVER['HTTP_REFERER']);
+                                                return 0;
+					}
+					$username = $_SESSION['User']['linked_accounts'][$link_key]['alias'];
+					$secret   = $_SESSION['User']['linked_accounts'][$link_key]['secret'];
+                                        if (!$username || !$secret){
+						$_SESSION['errorData']['Error'][]="Credentials for 'XNAT.$link_key' ($repository) are not set. Please, configure them in 'My Profile > 'Keys'. No XNAT alias or secret found";
+                                                ###redirect($_SERVER['HTTP_REFERER']);
+                                                return 0;
+                                        }
+                                        $auth = "$username:$secret";
+					var_dump("<br/>AUTH ===>>>> ",$auth);
+
+                                }else{
+                                        $_SESSION['ErrorData']['Error'][]="Cannot import resource. VRE Repository '$repo_type:$repository' has an unsupported 'auth' method (".$repo['auth'].").";
+                                        ###redirect($_SERVER['HTTP_REFERER']);
+                                        return 0;
+                                }
+                        }
+
+                        break;
+
+
+		default:
+			break;
+	}
+
+    }
+
+    var_dump("<br/>AUTH ===>>>> ",$auth);
+    print "<br/> --------- <br/>";
+
+    // validate given URL
+    
+    // Get URL headers
+    if ($auth != -1 && $auth != 0)
+	    $url_data = process_URL($url, $auth); 
+
+    print_r($url_data);
+
     //status
-    //$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $status = $url_data['status'];
-    //$url_effective = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+    $status        = $url_data['status'];
     $url_effective = $url_data['effective_url'];
 
     if ($status != 200 && !preg_match('/^3/',$status) ){
@@ -837,27 +1029,25 @@ function getData_fromRepository($params=array()) { //url, repo, id, taxon, filen
         redirect($_SERVER['HTTP_REFERER']);
     }
     //filename
-    $filename = $url_data['filename'];
-    if (! $filename){
-        $_SESSION['errorData']['Error'][] = "Resource URL ('$url') is not pointing to a valid filename";
-        redirect($_SERVER['HTTP_REFERER']);
+    if (!$filename){
+	$filename = $url_data['filename'];
+    	if (! $filename || preg_match('/[?&\/]/',$filename) ){
+        	$_SESSION['errorData']['Error'][] = "Resource URL ('$url') is not pointing to a valid filename";
+		redirect($_SERVER['HTTP_REFERER']);
+        }
     }
 
     //size
-    //$size      = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
     $size      = (int)$url_data['size'];
     $usedDisk  = (int)getUsedDiskSpace();
     $diskLimit = (int)$_SESSION['User']['diskQuota'];
     if ($size == 0 ) {
-	exit("size 0 error !");
-        $_SESSION['errorData']['Error'][] = "Resource URL ['$url'] is pointing to an empty resource (size = 0)";
-        redirect($_SERVER['HTTP_REFERER']);
+        $_SESSION['errorData']['Warning'][] = "Resource URL ['$url'] of unknown size or size 0.";
     }
     if ($size > ($diskLimit-$usedDisk) ) {
         $_SESSION['errorData']['Error'][] = "Cannot import file. There will be not enough space left in the workspace (size = $size)";
         redirect($_SERVER['HTTP_REFERER']);
     }
-    //curl_close($ch);
 
     // setting repository directory
 
@@ -932,12 +1122,17 @@ function getData_fromRepository($params=array()) { //url, repo, id, taxon, filen
 
         // setting tool outputs. Metadata will be saved in DB during tool output_file registration
         if (!$descrip){
-		$descrip="Remote file extracted from <a target='_blank' href=\"$url\">$url</a>";
+		$descrip="Remote file extracted from $url";
 	}
-        if (!$filetype){
-		list($fileExtension,$compressed,$fileBaseName) = getFileExtension($fnP); 
-	        $filetypes = getFileTypeFromExtension($fileExtension);
-        	$filetype =(isset(array_keys($filetypes)[0])?array_keys($filetypes)[0]:"");
+        if (!$filetype || !$compressed ){
+		list($fileExtension,$compressed_file,$fileBaseName) = getFileExtension($fnP);
+		if (!$filetype){
+		        $filetypes = getFileTypeFromExtension($fileExtension);
+        		$filetype =(isset(array_keys($filetypes)[0])?array_keys($filetypes)[0]:"");
+		}
+		if (!$compressed){
+			$compressed = $compressed_file;
+		}
 	}
 
         if ($filetype != "" && $datatype != ""){
@@ -957,7 +1152,8 @@ function getData_fromRepository($params=array()) { //url, repo, id, taxon, filen
         	   "meta_data"  => array(
 	                   "validated"   => $validated,
         	           "compressed"  => $compressed,
-	            	   "description" => $descrip,
+			   "description" => $descrip,
+			   "repository"  => $repository,
 			   )
 	);
 	if (isset($params['oeb_dataset_id'])){ $fileOut['meta_data']["oeb_dataset_id"] = $params['oeb_dataset_id'];}
@@ -992,7 +1188,7 @@ function getData_fromRepository($params=array()) { //url, repo, id, taxon, filen
             'description' => $descrip
             );
     
-        $fnId = uploadGSFileBNS_fromURL($params['url'],$wd, $insertData,$metaData,0);
+        $fnId = uploadGSFileBNS_fromURI($params['url'],$wd, $insertData,$metaData,0);
     
         
         if ($fnId == "0"){
@@ -1003,7 +1199,136 @@ function getData_fromRepository($params=array()) { //url, repo, id, taxon, filen
    }
 }
 
+// symbolic import from Repository to user workspace - only metadata
 
+function registerData_fromRepository($params=array()) { //url, repo, id, taxon, filename, data_type
+
+    // Get params
+    $repository       = $params['repository'];       // options: 'egaoutbox'  
+    $repository_path  = $params['repository_path'];  // resource remote file path 
+    // optional params mapped to VRE attributes
+    $datatype = (isset($params['data_type'])&& $params['data_type']? $params['data_type']:"");
+    $filetype = (isset($params['file_type'])&& $params['file_type']? $params['file_type']:"");
+    $format   = (isset($params['format'])&& $params['format']? $params['format']:"");
+    $size     =(isset($params['size']) && $params['size']? $params['size']:"NA");
+    $description = (isset($params['description'])&& $params['description']? $params['description']:"Resource imported from ".$params['repository']." as ".$params['repository_path']);
+    // optional params not mapped
+    $metadata_vre = array();
+
+    // Check compulsory  params
+    if (! $repository || ! $repository_path){
+        $_SESSION['errorData']['Error'][] = "Cannot import external resource. Bad request. Compulsory parameters are: 'repository', 'repository_path'";
+        redirect($_SERVER['HTTP_REFERER']);
+    }
+
+    // Build metadata dependend on the repository type
+
+    $uri = "";
+    $source_url="";
+    switch ($repository){
+    case "egaoutbox":
+	    	$uri = "urn:egaoutbox:".$_SESSION['User']['linked_accounts']['EGA']['username'].":$repository_path";
+	    	$source_url= $GLOBALS['EGA_METADATA_API']."/files?queryBy=file&queryId=".basename($repository_path);
+		$metadata_vre['encrypted'] = true;
+		$metadata_vre['encryptation_type'] = "crypt4gh";
+		break;
+	default:
+		$_SESSION['errorData']['Error'][]="Cannot import resource. Bad request. '$repository' is not a valid repository name";
+        	redirect($_SERVER['HTTP_REFERER']);
+
+    }
+
+    
+    // Setting parent dir - repository directory
+
+    $dataDirPath = getAttr_fromGSFileId($_SESSION['User']['dataDir'],"path");
+    $wd          = $dataDirPath."/repository";
+    $wdP         = $GLOBALS['dataDir']."/".$wd;
+    $wdId        = getGSFileId_fromPath($wd);
+
+    if ( $wdId == "0"){
+	//creating repository directory. Old users dont have it
+	$wdId  = createGSDirBNS($wd,1);
+	$_SESSION['errorData']['Info'][] = "Creating  repository directory: $wd ($wdId)";
+
+	if ($wdId == "0" ){
+            $_SESSION['errorData']['Internal error'][] = "Cannot create repository directory in $dataDirPath";
+            redirect($_SERVER['HTTP_REFERER']);
+	}
+	$r = addMetadataBNS($wdId,Array("expiration" => -1,
+				   "description"=> "Remote personal data"));
+	if ($r == "0"){
+            $_SESSION['errorData']['Internal error'][] = "Cannot set 'repository' directory $wd";
+            redirect($_SERVER['HTTP_REFERER']);
+	}
+	if (!is_dir($wdP))
+		mkdir($wdP, 0775);
+    }
+    if ($wdId == "0" || !is_dir($wdP)){
+	$_SESSION['errorData']['Error'][]="Target server directory '$wd' is not a directory. Your user account is corrupted. Please, report to <a href=\"mailto:helpdesk@multiscalegenomics.eu\">helpdesk@multiscalegenomics.eu</a>";
+        redirect($_SERVER['HTTP_REFERER']);
+    }
+    
+
+    // Prepare VRE metadata
+
+    // set path
+    $filename ="";
+    if (isset($params['filename']) && $params['filename']){
+	$filename =  $params['filename'];
+    }elseif($format){
+    	$filename  = basename($repository_path).".$format";
+    }else{
+    	$filename  = basename($repository_path);
+    }
+    $file_path = "$wd/$filename";
+
+    // set file_type
+    if (!$filetype && $format){
+	list($fileExtension,$compressed,$fileBaseName) = getFileExtension("$repository_path.$format"); 
+	$filetypes = getFileTypeFromExtension($fileExtension);
+	$filetype =(isset($filetypes[0])?$filetypes[0]['_id']:"");
+   }
+
+   // validated
+   if ($filetype != "" && $datatype != ""){
+            $metadata_vre['validated'] = true ; // Can lead to problems
+   }else{
+            $metadata_vre['validated'] = false;
+   }
+
+   $metadata_vre["data_type"]  = $datatype;
+   $metadata_vre["format"]     = $filetype;
+   $metadata_vre["description"]= $description;
+   $metadata_vre["input_files"]= [0];
+   if ($compressed) {$metadata_vre["compressed"]=$compressed;}
+  
+    // save File into DMP
+   $insertData=array(
+	'type'  => 'remote_file',   
+    	'uri'   => $uri,
+	'path'  => $file_path,
+	"source_url" => $source_url,
+    	'size'  => $size
+   );
+   $fnId = uploadGSFileBNS_fromURI($uri,$wd, $insertData,$metadata_vre,0);
+
+   if ($fnId == "0"){
+	    $_SESSION['errorData']['Error'][]="Error occurred while registering the external resource";
+	    #redirect($_SERVER['HTTP_REFERER']);
+	    return 0;
+   }
+   $_SESSION['errorData']['Info'][]="Resource successfully registered.";
+   header("Location:".$GLOBALS['URL']."/workspace/");
+}
+
+
+
+/*********************************/
+/*                               */
+/*      DATA FROM SAMPLE DATA    */
+/*                               */
+/*********************************/
 
 /*********************************/
 /*                               */

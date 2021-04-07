@@ -33,14 +33,15 @@ $userPath = getAttr_fromGSFileId($_SESSION['User']['dataDir'],"path");
 // file to be processed
 
 $fn     = $_REQUEST['fn'];
-$fnPath = getAttr_fromGSFileId($fn,'path');
+$fnFile = getGSFile_fromId($fn);
+$fnPath = $fnFile['path'];
 $rfn    = $GLOBALS['dataDir']."/".$fnPath;
 
 
 $resp['fileId']   = $fn;
 $resp['fileName'] = basename($fnPath);
 
-if (! is_file($rfn)){
+if (!is_file($rfn) && !$fnFile['uri']){
 	$resp['msg'] ="Error: Cannot find file '".basename($fnPath)."' . Not stored in disk anymore.</br>";
 	print json_encode($resp);
 	die();
