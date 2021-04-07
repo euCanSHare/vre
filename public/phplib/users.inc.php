@@ -269,13 +269,30 @@ function createUserFromAdmin(&$f) {
 
 // load user to SESSION
 function setUser($f,$lastLogin=FALSE) {
-    $aux = (array)$f;
+	$aux = (array)$f;
 	unset($aux['crypPassword']);
-	//unset($aux['lastLogin']);
-    $_SESSION['User']   = $aux;
+    	$_SESSION['User']   = $aux;
 	$_SESSION['curDir'] = $_SESSION['User']['id'];
-
 	if(!isset($_SESSION['lastUserLogin']) && $lastLogin) $_SESSION['lastUserLogin'] = $lastLogin;
+
+	// TODO: clean after eucanshare demo
+	if (in_array($_SESSION['User']['Email'], array("gelpi@ub.edu","laia.codo@bsc.es","laiacodo@gmail.com","alejandro.canosa@bsc.es","demo@ub.edu","demo20@bsc.es","demo2020@bsc.es","victoryuser@bsc.es")) ){
+                $_SESSION['User']['linked_accounts']['EGA']= array(
+                        "username"  => "laia.codo@bsc.es",
+                        'priv_key'   =>  "-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABC7U0iCF1
+fv9ZY7UJMd9QPeAAAAEAAAAAEAAAAzAAAAC3NzaC1lZDI1NTE5AAAAIBfKkGewJqLlxq53
+dokymP9T1kziSjaI/+LvBD4RdZlqAAAAkF9pXWXxlhPy5gabzzSLiJ1WSeqvpwrmlQSiZg
+Y0sgRUXmy6r0GItlo/2ZPvrKVnI/1U5EHF6k745ByrwSPj8AkmSg7nQ7zfPNE4wa/Q/kzj
+YlOJ/H0o7vq0XV9IALPTy1Lsni+TMwmdNwNwqsGhuCtiy3ctMsfHc1tK2p6alUq2hszWS5
+kIdSvYdjp5pbnTnQ==
+-----END OPENSSH PRIVATE KEY-----
+",
+                        'pub_key'   => "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBfKkGewJqLlxq53dokymP9T1kziSjaI/+LvBD4RdZlq user@EUSH-vre
+",
+                        'passphrase' => "bsc***");
+			
+        }
 }
 
 function delUser($id, $asRoot=1, $force=false){
@@ -328,26 +345,22 @@ function injectMugIdToKeycloak($login,$id){
 
     if ($kc_token  && isset($kc_token['access_token'])){
         $kc_user = get_keycloak_user($login,$kc_token['access_token']);
-print "\n\n\nKC USER\n";
-var_dump($kc_user);
         if ($kc_user && isset($kc_user['id'])){
             $attributes = array();
             if ($kc_user['attributes'])
                 $attributes = $kc_user['attributes'];
             $attributes['vre_id'] = array($id);
             $data = array("attributes" => $attributes); 
-print "\nPOST DATA\n";
-var_dump(json_encode($data));
             $r = update_keycloak_user($kc_user['id'],json_encode($data),$kc_token['access_token']);
 
             if (!$r){
-                $_SESSION['errorData']['Warning'][]="User not valid to be used outside VRE. Could not inject 'vre_id' into Auth Server. Cannot update ".$aux['_id']." in its registry";
+                $SESSION['errorData']['Warning'][]="User not valid to be used outside VRE. Could not inject 'vre_id' into Auth Server. Cannot update ".$kc_user['id']." at the central registry";
                 return false;
             }else{
                 return true;
             }
         }else{
-            $_SESSION['errorData']['Warning'][]="User not valid to be used outside VRE. Could not inject 'vre_id' into Auth Server. Cannot get ".$aux['_id']." from its registry";
+            $_SESSION['errorData']['Warning'][]="User not valid to be used outside VRE. Could not inject 'vre_id' into Auth Server. Cannot retrieve $login user details from the central registry. Invalid token?";
             return false;
         }
     }else{
@@ -366,9 +379,8 @@ function resetPasswordViaKeycloak($login,$id){
 
             $r = update_keycloak_userPass($kc_user['id'],$kc_token['access_token']);
 
-            print "AQUI ESTA!!";
             var_dump($r);
-            die();
+            die("resetPasswordViaKeycloak()");
 
             if (!$r){
                 $_SESSION['errorData']['Warning'][]="User not valid to be used outside VRE. Could not inject 'vre_id' into Auth Server. Cannot update ".$aux['_id']." in its registry";
@@ -583,6 +595,35 @@ function getUserJobPid($login,$pid) {
         return $r['lastjobs'];
     else
         return Array();
+}
+
+
+function addUserLinkedAccount($login,$account_type,$data){
+ 
+    $all_accounts=array();
+    $r = $GLOBALS['usersCol']->findOne(array('_id'  => $login,
+                                             'linked_accounts'=> array('$exists' => true)
+                                            ));
+    if (isset($r['linked_accounts'])){
+	$all_accounts= $r['linked_accounts'];
+    }
+    $all_accounts[$account_type] = $data;
+
+    $GLOBALS['usersCol']->updateOne(array('_id' => $login),
+                                 array('$set'   => array('linked_accounts' => $all_accounts)),
+                                 array('upsert' => true)
+                                );
+}
+function deleteUserLinkedAccount($login,$account_type){
+    try {
+	$GLOBALS['usersCol']->updateOne(array('_id' => $login),
+                                 array('$unset' => array("linked_accounts.$account_type" => 1 ))
+			 );
+    }catch(MongoCursorException $e){
+            $_SESSION['errorData']['Error'][]="Cannot delete linked_account '$account_type'. ".$e->getMessage();
+            return false;
+    }
+    return true;
 }
 
 ?>

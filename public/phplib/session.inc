@@ -14,7 +14,6 @@ session_set_cookie_params($timeout);
 
 // start or resume session
 session_start();
-
 $_SESSION['VREtimeout'] = time();
 
 ?>

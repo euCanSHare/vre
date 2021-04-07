@@ -3,7 +3,6 @@
 require __DIR__ . "/../../config/bootstrap.php";
 redirectOutside();
 
-
 // Print header
 
 require "../htmlib/header.inc.php";
@@ -22,8 +21,6 @@ if ($usedDisk < $diskLimit) {
 	$usedDiskPerc = 100;
 }
 
-$kk = $GLOBALS['toolsCol']->find(array("external" => true), array("input_files_combinations_internal" => true));
-
 // Tools list
 $dtlist = ( (isset($_REQUEST["tool"]) && $_REQUEST["tool"] != "")?  getAvailableDTbyTool($_REQUEST["tool"]) : array() );
 
@@ -31,7 +28,6 @@ $dtlist = ( (isset($_REQUEST["tool"]) && $_REQUEST["tool"] != "")?  getAvailable
 $projects = getProjects_byOwner();
 
 //update files workspace content (job and files)
-
 $allFiles = getFilesToDisplay(array('_id' => $_SESSION['User']['dataDir']), null);
 
 $files = ( isset($dtlist['list'])? filterFiles_by_dataType($allFiles, $dtlist["list"]) : $allFiles );
@@ -836,5 +832,4 @@ If you want to <strong>re-use your session</strong>, make sure you save the <str
 			<?php
 			require "../htmlib/footer.inc.php";
 			require "../htmlib/js.inc.php";
-
 			?>
