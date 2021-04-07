@@ -39,7 +39,11 @@ if (! empty($_FILES)) {
 			if($_REQUEST["is_view"] == 1) $path = "visualizers";
 			else $path = "tools";
 
-			$target_file = $GLOBALS['htmlPath'].$path.'/'.$_REQUEST['tool'].'/help/img/' . $filename ;
+			$target_dir = $GLOBALS['htmlPath'].$path.'/'.$_REQUEST['tool'].'/help/img/';
+			if ( !is_dir($target_dir) ){
+				mkpath($target_dir);	
+			}
+			$target_file = $target_dir . $filename ;
 			if (move_uploaded_file($file["tmp_name"], $target_file)) {
 				$uploadedFiles[] = $path.'/'.$_REQUEST['tool'].'/help/img/' . urlencode($filename);
 			}else{
