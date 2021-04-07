@@ -445,7 +445,6 @@ function getFilesToDisplay($dirSelection,$filter_data_types=array()) {
 	}else{
 	    $filesAll=$files;
     }
-
     return $filesAll;
 }
 
@@ -524,43 +523,51 @@ function printTable($filesAll=Array() ) {
 
     foreach ($filesAll as $r) {
 	    // is dir
-			if (isset($r['files'])){
-				if (preg_match('/\/\./',$r['_id'])){
-					continue;
-				}
+	if (isset($r['files'])){
+		if (preg_match('/\/\./',$r['_id'])){
+			continue;
+		}
 		if (isset($r['pending'])){
-					if(basename($r['path']) == "uploads"){
-						print parseTemplate(formatData($r,"minimal"), getTemplate('/TreeTblworkspace/TR_folder_uploads.htm'));
-					}elseif(basename($r['path']) == "repository"){
-						print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_folder_repository.htm'));
-					}else{
-						print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_folderPending.htm'));
-					}
-				}elseif(basename($r['path']) == "uploads"){
-					print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_folder_uploads.htm'));
-				}elseif(basename($r['path']) == "repository"){
-					print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_folder_repository.htm'));
-				}elseif(count($r['files']) == 0){
-					print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_folder_empty.htm'));
-				}else{
-					print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_folder.htm'));
+			if(basename($r['path']) == "uploads"){
+				print parseTemplate(formatData($r,"minimal"), getTemplate('/TreeTblworkspace/TR_folder_uploads.htm'));
+			}elseif(basename($r['path']) == "repository"){
+				print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_folder_repository.htm'));
+			}else{
+				print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_folderPending.htm'));
+			}
+		}elseif(basename($r['path']) == "uploads"){
+			print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_folder_uploads.htm'));
+		}elseif(basename($r['path']) == "repository"){
+			print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_folder_repository.htm'));
+		}elseif(count($r['files']) == 0){
+			print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_folder_empty.htm'));
+		}else{
+			print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_folder.htm'));
 		}
 	    // is job
-			}elseif(isset($r['pending'])){
-					print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_filePending.htm'));
-		    $autorefresh=1;
-	    // is file
-			}elseif(isset($r['_id'])){
-					if ($r['validated']){
-						print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_file.htm'));
-					}else{
-						print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_fileDisabled.htm'));
-					}
-			}else{
-				//empty mongo entry;
-			}
+	}elseif(isset($r['pending'])){
+		print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_filePending.htm'));
+		$autorefresh=1;
+
+	    // is url
+	}elseif(isset($r['uri'])){
+		if ($r['validated']){
+			print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_fileRemote.htm'));
+		}else{
+			print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_fileRemoteDisabled.htm'));
 		}
-		?>
+	    // is file
+	}elseif(isset($r['_id'])){
+		if ($r['validated']){
+			print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_file.htm'));
+		}else{
+			print parseTemplate(formatData($r, "minimal"), getTemplate('/TreeTblworkspace/TR_fileDisabled.htm'));
+		}
+	}else{
+		//empty mongo entry;
+	}
+    }
+	?>
 		</tbody>
 
 	</table>
@@ -775,7 +782,7 @@ function formatData($data, $outformat="full") {
 	    	    if (!$data['parentDir']){
 			$_SESSION['errorData']['Warning'][]="Accessing data not belonging to your account! Some permission issues may arise";
 	    	    }
-	    	    if ($data['type'] == "file"){
+	    	    if ($data['type'] == "file" || $data['type'] == "remote_file"){
     			$parentDir_explode = explode("/",$data['parentDir']);
     			$executionName = array_pop($parentDir_explode);
 		    }else{
@@ -830,13 +837,13 @@ function formatData($data, $outformat="full") {
 			$data['longfilename']= basename($data['path']);
 		}
 		// TODO for debug. Temporal. To delete
-	if ($data['filename']){
-	    if (!is_url($data['path'])){
-    			$rfn      = $GLOBALS['dataDir']."/".$data['path'];
-    			if (!is_file($rfn) && !is_dir($rfn)){
-    				$data['filename']="ERROR-".$data['filename'];
-    			}
-	    }
+		if ($data['filename']){
+			if (!is_url($data['path']) && !isset($data['uri'])){
+    				$rfn      = $GLOBALS['dataDir']."/".$data['path'];
+    				if (!is_file($rfn) && !is_dir($rfn)){
+    					$data['filename']="ERROR-".$data['filename'];
+				}
+			}
 		}
 		if(isset($data['submission_file'])){
 			$data['execDetails'] = "<tr><td>Execution details:</td><td><a href=\"javascript:callShowSHfile('".$data ['tool']."','".$data['submission_file']."');\">Analysis parameters</a></td></tr>";
@@ -1892,8 +1899,10 @@ function refresh_token($force=false){
 
     //$provider = new MuG_Oauth2Provider\MuG_Oauth2Provider(['redirectUri'=> 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['PHP_SELF']]);
     $provider = new MuG_Oauth2Provider\MuG_Oauth2Provider(['redirectUri'=> $GLOBALS['URL'] . $_SERVER['PHP_SELF']]);
-
+    
     if ($force || $existingTokenO->hasExpired()) {
+	    //$newTokenO = $provider->getAccessToken('refresh_token', [ 'refresh_token' => $existingTokenO->getRefreshToken()]);
+
 	try {
 	    $newTokenO = $provider->getAccessToken('refresh_token', [ 'refresh_token' => $existingTokenO->getRefreshToken()]);
 	    if ($newTokenO->getToken()){
@@ -2105,12 +2114,12 @@ function deleteFiles($fns,$force=false){
 	$file_fn  = $file['path'];
 	$file_rfn = $GLOBALS['dataDir']."/$file_fn";
 	//print " PATH = $file_fn  RFN = $file_rfn<br/>";
-	if (!file_exists($file_rfn) && !$force){
+	if (!isset($file['uri']) && !file_exists($file_rfn) && !$force){
 	    $_SESSION['errorData']['Error'][]="Cannot delete file with id '".basename($file_fn)."'. File not found.";
 	    $result = false;
 	    continue;
 	}
-        if (!is_writable($file_rfn) && !$force){
+        if (!isset($file['uri']) && !is_writable($file_rfn) && !$force){
             $_SESSION['errorData']['Error'][]="Cannot delete file with id '".basename($file_fn)."'. File not writable.";
             $result = false;
             continue;

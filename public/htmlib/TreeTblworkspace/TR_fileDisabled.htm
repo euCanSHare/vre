@@ -9,20 +9,7 @@
 
 <td>
 	<a class="##state## truncate"  href="workspace/workspace.php?op=##openFunction##&fn=##_id_URL##" title="open file ##filename##" target="_blank">##filename##</a>
-    <!--<span class="expand_info display-hide" onclick="expandInfo(this)"></span>-->
-	<div class="extra_info display-hide">
-	  <table>
-	  	<tr>
-			<td style="padding:0px 5px;vertical-align:top;color:#000;font-size:12px;">Description:</td>
-			<td style="padding:0px 5px;color:#666;font-size:12px;">##description##</td>
-		 </tr>
-		##execDetails##
-		##notes##
-		##refGenome##
-		##paired##
-	  </table>
-  	</div>
-    <a href="javascript:viewFileMeta('##_id##', '##longfilename##', 1);" style="margin-left:3px;" class="font-yellow-saffron"><i class="fa fa-exclamation-triangle"></i></a>
+    	<a href="javascript:viewFileMeta('##_id##', '##longfilename##', 1);" style="margin-left:3px;" class="font-yellow-saffron"><i class="fa fa-exclamation-triangle"></i></a>
 </td>
 <td>##format##</td>
 <td></td>
@@ -37,9 +24,8 @@
 		</button>
 	  <ul class="dropdown-menu pull-right" role="menu">
 			##metadataLink##
-
 			##renameLink##
-						<li><a href="workspace/workspace.php?op=downloadFile&fn=##_id_URL##"><i class="fa fa-download"></i> Download file </a></li>
+			<li><a href="workspace/workspace.php?op=downloadFile&fn=##_id_URL##"><i class="fa fa-download"></i> Download file </a></li>
 			<li><a href="javascript:deleteFile('##_id_URL##');"><i class="fa fa-trash-o"></i> Delete file </a></li>
 			##compressionLink##
 		</ul>
