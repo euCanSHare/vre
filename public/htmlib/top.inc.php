@@ -28,7 +28,7 @@ if (file_exists($avatarImg)) {
         <div class="page-logo">
             <a href="workspace/">
                 <img src="assets/layouts/layout/img/logo.png" alt="logo" class="logo-default" style="width:35%"/>
-                <img src="assets/layouts/layout/img/VRE_blue.png" alt="logo" class="logo-default"/>
+                <img src="assets/layouts/layout/img/VRE_blue.svg" alt="logo" class="logo-default" style="width:45%"/>
             </a>
             <div class="menu-toggler sidebar-toggler">
                 <span></span>
