@@ -9,7 +9,6 @@ if(! $_REQUEST['uploadType']){
 	die(0);
 	//redirect($GLOBALS['BASEURL']."/workspace/"); # Bug fix for: TOO LONG REQUEST
 }
-
 switch ($_REQUEST['uploadType']){
 	case 'file':
 		header ("Connection: close");
@@ -25,9 +24,12 @@ switch ($_REQUEST['uploadType']){
 	case 'id':
 		$source = getSourceURL();
 		getData_fromURL($source['url'], $source['ext'],"id");
-                break;
+        	break;
 	case 'repository':
 		getData_fromRepository($_REQUEST);
+        	break;
+	case 'federated_repository':
+		registerData_fromRepository($_REQUEST);
         	break;
 	case 'repositoryTest':
 		getData_fromRepository_ToPublic($_REQUEST);
