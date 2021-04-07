@@ -64,8 +64,8 @@ if (isset($_REQUEST['op'])){
 		foreach( $_GET['fn'] as $v ) {
 			if($v !== 'undefined'){
 				$filePath2 = getAttr_fromGSFileId($v,'path'); 
-				$relpath = implode("/", array_slice(split('/',$filePath2), 0, -1));
-				$filnam = end(split('/',$filePath2));
+				$relpath = implode("/", array_slice(explode('/',$filePath2), 0, -1));
+				$filnam = end(explode('/',$filePath2));
 				$rfn2      = $GLOBALS['dataDir']."/$relpath";
 				$fls .= "-C $rfn2 $filnam ";
 				
@@ -91,12 +91,16 @@ if (isset($_REQUEST['op'])){
 			$_SESSION['errorData']['Error'][] = "Cannot tar ".$_REQUEST['fn']." File is not a directory";
 			break;
 		}
+		if (trim($rfn,"/") == trim($GLOBALS['dataDir'],"/")){
+			$_SESSION['errorData']['Error'][] = "Cannot tar ".$_REQUEST['fn']." . Make sure your user session is active.";
+			break;
+		}
 		$newName= $_REQUEST['fn'].".tar.gz";
 		$tmpZip = $GLOBALS['dataDir']."/".$userPath."/".$GLOBALS['tmpUser_dir']."/".basename($newName); 
 
-		$cmd = "/bin/tar -czf $tmpZip -C $rfn  2>&1";
-		#$cmd = "/bin/tar -czf $tmpZip -C $rfn .  2>&1"; # TODO ORIGEN of INFINITE TARS?
-		logger("workspace/workspace.php:550 -- TAR CMD: ".$cmd);
+		$cmd = "/bin/tar -czf $tmpZip -C $rfn . 2>&1";
+	        #$cmd = "/bin/tar -czf $tmpZip -C $rfn .  2>&1"; # TODO ORIGEN of INFINITE TARS?
+		logger("workspace/workspace.php:103 -- TAR CMD: ".$cmd);
 
 		exec($cmd,$output);
 		if ( !is_file($tmpZip) ){
