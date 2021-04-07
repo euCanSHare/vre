@@ -817,7 +817,7 @@ function prepMetadataResult($meta,$fnPath=0){
                         $prefix = preg_replace("/.$ext/i","",basename($filePath));
                         $prefix = preg_replace("/^.*_/","",$prefix);
                 }
-                $reObj = new MongoRegex("/".$_SESSION['User']['id'].".*".$prefix."/i");
+		$reObj = new \MongoDB\BSON\MongoRegex($_SESSION['User']['id'].".*".$prefix);
                 $relatedBAMS = $GLOBALS['filesMetaCol']->find(array('path'  => $reObj));
                 if (!empty($relatedBAMS)){
                        $relatedBAMS->next();

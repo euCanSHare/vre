@@ -1,5 +1,7 @@
 <?php
 
+use MongoDB\Driver\Manager;
+
 // read credentials
 $conf = array();
 if (($F = fopen($GLOBALS['db_credentials'], "r")) !== FALSE) {

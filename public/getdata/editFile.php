@@ -181,6 +181,8 @@ redirectOutside();
 					'sorted'     => TRUE,
 				);*/
 
+
+
 			    //extract or guess file formats
 			    foreach ($filesData as $idx => $v ) {
 				$fn            = $filesData[$idx]['_id'];
@@ -190,11 +192,11 @@ redirectOutside();
 				}elseif (isset($filesMeta[$idx]['format']) && $filesMeta[$idx]['format']){
 					$fileExtension=$filesMeta[$idx]['format'];
 				}elseif(isset($filesData[$idx]['_id'])){
-                    $fnPath = $filesData[$idx]['path'];
-                    list($fileExtension,$compressionType) = getFileExtension($fnPath);
-                    if ($compressionType){
-                        $_REQUEST['compressed'][$idx]=1;
-                    }
+                    			$fnPath = $filesData[$idx]['path'];
+                    			list($fileExtension,$compressionType) = getFileExtension($fnPath);
+                    			if ($compressionType){
+						$_REQUEST['compressed'][$idx]=1;
+                    			}
 /*
 					$fileInfo = pathinfo($fnPath);
 					if (isset($fileInfo['extension'])){
@@ -212,7 +214,6 @@ redirectOutside();
 				}
 
 				$filetypes = getFileTypesList();
-
 
 				//fill in form defaults from: REQUEST > FILEMETA DB > DEFAULTS $def
 				/*foreach ($defs as $attr => $v ){
@@ -248,30 +249,11 @@ redirectOutside();
 				  <div class="form-group formatTR" id="formatTR<?php echo $idx;?>">
 				        <label>File Format *</label>
 				        <select id="format<?php echo $idx;?>" name="format" onchange="customfromFormat(this.value, <?php echo $idx;?>)" class="form-control formatSelector file-type-selector">
-								<option value="" >Select the file format</option>
-								<?php foreach($filetypes as $ft) { ?>
-								<option value="<?php echo $ft['_id']; ?>" <?php if (in_array($fileExtension,$ft['extension'])){echo "selected";}?>><?php echo $ft['_id']; ?></option>
-								<?php } ?>
+						<option value="" >Select the file format</option>
+						<?php foreach($filetypes as $ft) { ?>
+							<option value="<?php echo $ft['_id']; ?>" <?php if ($fileExtension == $ft['_id']){echo "selected";}?>><?php echo $ft['_id'];?></option>
+						<?php } ?>
 
-
-						 <!--<option value="BAM"  <?php if ($fileExtension =="BAM") {echo "selected";}?> >BAM</option>
-						 <option value="BED"  <?php if ($fileExtension =="BED") {echo "selected";}?> >BED </option>
-						 <option value="BEDGRAPH" <?php if ($fileExtension=="BEDGRAPH"){echo "selected";}?>>BEDGRAPH</option>
-						 <option value="WIG"  <?php if ($fileExtension =="WIG") {echo "selected";}?> >WIG</option>
-						 <option value="BW"   <?php if ($fileExtension =="BW")  {echo "selected";}?> >BIGWIG</option>
-						 <option value="GFF"  <?php if (in_array($fileExtension,Array("GTF","GFF"))){echo "selected";}?> >GFF/GTF</option>
-						 <option value="GFF3" <?php if ($fileExtension =="GFF3"){echo "selected";}?> >GFF3</option>
-						 <option value="FASTQ" <?php if (in_array($fileExtension,Array("FASTQ","FQ"))){echo "selected";}?>>FASTQ</option>
-						 <option value="FASTA" <?php if (in_array($fileExtension,Array("FA","FASTA","FN"))){echo "selected";}?>>FASTA</option>
-						 <option value="PDB"  <?php if ($fileExtension =="PDB") {echo "selected";}?> >PDB</option>
-						 <option value="JSON" <?php if ($fileExtension =="JSON"){echo "selected";}?> >JSON</option>
-						 <option value="TXT"  <?php if ($fileExtension =="TXT"){echo "selected";}?> >TXT</option>
-						<option value="DCD"  <?php if ($fileExtension =="DCD") {echo "selected";}?> >DCD</option>
-						 <option value="GRO"  <?php if ($fileExtension =="GRO") {echo "selected";}?> >GRO</option>
-						<option value="GEM"  <?php if ($fileExtension =="GEM") {echo "selected";}?> >GEM</option>
-						<option value="PARMTOP"  <?php if (in_array($fileExtension,Array("PARMTOP","PRMTOP","TOP"))){echo "selected";}?> >PARMTOP</option>
-						<option value="MDCRD"  <?php if (in_array($fileExtension,Array("MDCRD","TRJ"))){echo "selected";}?> >MDCRD</option>
-						 <option value="UNK"  <?php if ($fileExtension =="UNK"){echo "selected";}?> >OTHER</option>-->
 				        </select>
 				  </div>
 
@@ -280,8 +262,8 @@ redirectOutside();
 					<div class="form-group display-hide" id="dataType<?php echo $idx;?>">
 				        <label>Data Type * <i class="icon-question tooltips" data-container="body" data-placement="right" data-original-title="Data type description"></i></span></label>
 				        <select name="data_type" id="data_type_sel<?php echo $idx;?>" class="form-control data-type-selector" onchange="customfromDataType(this.value, <?php echo $idx;?>)" disabled>
-								</select>
-								<!--<span class="help-block font-red warn1" style="display:none;">This field is required.</span>-->
+					</select>
+					<!--<span class="help-block font-red warn1" style="display:none;">This field is required.</span>-->
 				  </div>
 
 					<div class="form-group display-hide" id="taxonG<?php echo $idx;?>">

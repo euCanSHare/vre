@@ -563,7 +563,7 @@ box-shadow:  1px 1px 8px 0px rgba(204, 204, 204, 1);
 
 .truncate  {
      float: left;
-     max-width:  140px;
+     max-width:  200px!important;
      white-space:  nowrap;
      overflow:  hidden;
      text-overflow:  ellipsis;

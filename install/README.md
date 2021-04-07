@@ -39,7 +39,8 @@ extension=gd2
 After installing the packages, restart the web server:
 
 ```
-sudo apt-get install php-curl php-gd
+sudo apt-get install libssh2-1-dev
+sudo apt-get install php-curl php-gd php-ssh2 php-mbstring
 sudo service apache2 restart
 
 ```

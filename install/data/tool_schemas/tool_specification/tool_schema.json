@@ -182,6 +182,7 @@
                 "TXT",
                 "VCF",
                 "WIG",
+                  "XLSX",
                 "XTC"
               ]
             }
@@ -209,7 +210,12 @@
                 "allele_frequency_report",
 		"genome_annotation",
                 "component_file",
-		"machine_learning_features"
+		"machine_learning_features",
+                "expression_matrix",
+                "annotations",
+                "group_definitions",
+                "covariate_matrix",
+                "differential_matrix"
               ]
             }
           },
@@ -338,6 +344,7 @@
                 "TXT",
                 "VCF",
                 "WIG",
+                  "XLSX",
                 "XTC"
               ]
             }
@@ -364,7 +371,12 @@
                 "sample_information_file",
                 "allele_frequency_report",
                 "component_file",
-                "machine_learning_features"
+                "machine_learning_features",
+                "expression_matrix",
+                "annotations",
+                "group_definitions",
+                "covariate_matrix",
+                "differential_matrix"
 
               ]
             }
@@ -548,6 +560,7 @@
                   "TXT",
                   "VCF",
                   "WIG",
+                  "XLSX",
                   "XTC"
                 ]
               },
@@ -572,7 +585,12 @@
                 "allele_frequency_report",
 		"genome_annotation",
                 "component_file",
-                "machine_learning_features"
+                "machine_learning_features",
+                "expression_matrix",
+                "annotations",
+                "group_definitions",
+                "covariate_matrix",
+                "differential_matrix"
                 ]
               },
               "file_path": {

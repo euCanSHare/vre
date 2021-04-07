@@ -3,7 +3,6 @@
 //  test if a given file_id is a directory
  
 function isGSDirBNS($col, $fn) {
-	logger("INFO: isGSDirBNS -> $col -> FINDEONE _id=>$fn 'files'=>\$exists");
 	$file = $col->findOne(array('_id'  => $fn,
 			'files' => array('$exists' => true)
 		   )
@@ -53,7 +52,6 @@ function getGSFilesFromDir($dataSelection=Array(),$onlyVisible=0){
     // query directory document
 
 
-    logger("INFO: getGSFilesFromDir->filesCOL.FINDONE \"".json_encode($dataSelection)."\"");
     $dirData = $GLOBALS['filesCol']->findOne($dataSelection);
 
     if (!isset($dirData['_id'])){
@@ -75,10 +73,8 @@ function getGSFilesFromDir($dataSelection=Array(),$onlyVisible=0){
     foreach ($dirData['files'] as $d) {
 
         if ($onlyVisible){
-    	    logger("INFO: getGSFilesFromDir: getGSFile_filteredBy \"".json_encode($d)."\" + {visible:ne:false}");
 	    $fData = getGSFile_filteredBy($d, array('visible'=> Array('$ne'=>false)) );	
 	}else{
-    	    logger("INFO: getGSFilesFromDir: getGSFile_fromId \"".json_encode($d)."\"");
 	    $fData = getGSFile_fromId($d);
 	}
 	if ( $fData['path'] == $_SESSION['User']['id'] ){ // home file
@@ -94,10 +90,8 @@ function getGSFilesFromDir($dataSelection=Array(),$onlyVisible=0){
 		foreach ($fData['files'] as $dd) {
 
 	    		if ($onlyVisible){
-    	    		    logger("INFO: getGSFilesFromDir: getGSFile_filteredBy \"".json_encode($dd)."\" + {visible:ne:false}");
 			    $ffData = getGSFile_filteredBy($dd, array('visible'=> Array('$ne'=>false)) );	
 			}else{
-    	    	    	     logger("INFO: getGSFilesFromDir: getGSFile_fromId \"".json_encode($dd)."\"");
 	    	   	     $ffData = getGSFile_fromId($dd);
 			}
 			if (is_object($ffData['mtime']))
@@ -115,10 +109,8 @@ function getGSFilesFromDir($dataSelection=Array(),$onlyVisible=0){
 function getGSFileId_fromPath($fnPath,$asRoot=0) {
 	$col = $GLOBALS['filesCol'];
 	if ($asRoot){
-    		logger("INFO: getGSFileId_fromPath -> $col -> FINDONE path=>$fnPath");
 		$file = $col->findOne(array('path'  => $fnPath));
 	}else{
-    		logger("INFO: getGSFileId_fromPath -> $col -> FINDONE path=>$fnPath owner=>user");
 		$file = $col->findOne(array('path'  => $fnPath,
 				    'owner' => $_SESSION['User']['id']
 		));
@@ -148,7 +140,6 @@ function getGSFile_fromId($fn,$filter="",$asRoot=0) {
                 array('$unwind' => array('path' => '$meta'))
                 );
 # $d = $GLOBALS['filesCol']->aggregate($ops);
- logger("INFO: getGSFile_fromId -> files+filesMeta AGGREGATE _id=>$fn");
  $data = iterator_to_array( $GLOBALS['filesCol']->aggregate($ops), false );
 
  if (!$data || count($data) == 0 || count($data[0]) == 0)
@@ -179,13 +170,10 @@ function getGSFile_fromId($fn,$filter="",$asRoot=0) {
 
 function getGSFile_fromId_DEPRECATED($fn,$filter="",$asRoot=0) {
     if ($asRoot){
-    	logger("INFO: getGSFile_fromId -> filesCOL.FINDONE _id=>$fn");
         $fileData = $GLOBALS['filesCol']->findOne(array('_id' => $fn) );
     }else{
-    	logger("INFO: getGSFile_fromId -> filesCOL.FINDONE _id=>$fn owner=>user");
 	$fileData = $GLOBALS['filesCol']->findOne(array('_id' => $fn, 'owner' => $_SESSION['User']['id']));
     }
-    logger("INFO: getGSFile_fromId -> filesMetaCOL FINDONE _id=>$fn");
     $fileMeta = $GLOBALS['filesMetaCol']->findOne(array('_id' => $fn));
 
     if($filter == "onlyMetadata"){
@@ -219,11 +207,8 @@ function getGSFile_filteredBy($fn,$filters) {
 	else
 		$filter_filesMetaCol[$attr] = $v;
     }	
-    logger("INFO: getGSFile_filteredBy -> filesCOL.FINDONE \"".json_encode($filter_filesCol)."\"");
     $fileData = $GLOBALS['filesCol']->findOne($filter_filesCol);
-    logger("INFO: getGSFile_filteredBy -> filesMetaCOL.FINDONE \"".json_encode($filter_filesMetaCol)."\"");
     $fileMeta = $GLOBALS['filesMetaCol']->findOne($filter_filesMetaCol);
-    logger("INFO: getGSFile_filteredBy -> filesMetaCOL.FINDONE \" {_id:$fn} \"");
     $existMeta= $GLOBALS['filesMetaCol']->findOne(Array('_id' => $fn));
 	if (empty($fileData))
 		return 0;
@@ -878,85 +863,89 @@ function uploadGSFileBNS($fnPath, $file, $attributes=Array(), $meta=Array(), $lo
 
 
 // create new file registry from a URL
-function uploadGSFileBNS_fromURL($url, $parentPath , $attributes=Array(), $meta=Array(), $asRoot=0){
+function uploadGSFileBNS_fromURI($uri, $parentPath , $attributes=Array(), $meta=Array(), $asRoot=0){
 
-	$col = $GLOBALS['filesCol'];
+    $col = $GLOBALS['filesCol'];
 
-    //check url
-    if(!is_url($url)){
-        $_SESSION['errorData']['mongoDB'][]="Cannot upload '$url'. Invalid URL format";
+    //check uri
+    if(!is_url($uri) && !is_urn($uri)){
+        $_SESSION['errorData']['mongoDB'][]="Cannot import '$uri'. Invalid locator format. Expected URL or URN";
         return 0;
     }
-    $r = getGSFileId_fromPath($url);
-    if ($r != "0"){
-		$_SESSION['errorData']['mongoDB'][]="Warning: Cannot upload '$url'. The resource was already there";
-        return $r;
+    #$r = getGSFileId_fromURL($uri);
+    #if ($r != "0"){
+    #	$_SESSION['errorData']['mongoDB'][]="Warning: Cannot upload '$uri'. The resource was already there";
+    #    return $r;
+    #}
+
+    //check parent
+    $parentId  = getGSFileId_fromPath($parentPath,$asRoot);
+    if ($parentId == "0"){
+ 	$r = createGSDirBNS($parentPath,$asRoot);
+	if ($r=="0")
+ 	    return 0;
+    }else{
+	if (!isGSDirBNS($col,$parentId) ){
+		$_SESSION['errorData']['mongoDB'][]="Cannot upload '$uri'. Parent '$parentPath' is not a directoryy";
+		return 0;
+        }
+	$parentObj = $col->findOne(array(
+			'_id' => $parentId,
+			'owner' => $_SESSION['User']['id']
+	) );
+	if (isset($parentObj['permissions']) && $parentObj['permissions']== "000" ){
+		$_SESSION['errorData']['mongoDB'][]= "Not permissions to modify parent directory $parentPath";
+		return 0;
+	}
     }
 
-	//check parent
-	$parentId  = getGSFileId_fromPath($parentPath,$asRoot);
-	if ($parentId == "0"){
-		$r = createGSDirBNS($parentPath,$asRoot);
-		if ($r=="0")
-			return 0;
-	}else{
-		if (!isGSDirBNS($col,$parentId) ){
-			$_SESSION['errorData']['mongoDB'][]="Cannot upload '$url'. Parent '$parentPath' is not a directoryy";
-			return 0;
-        }
-		$parentObj = $col->findOne(array(
-					'_id' => $parentId,
-					'owner' => $_SESSION['User']['id']
-					) );
-		if (isset($parentObj['permissions']) && $parentObj['permissions']== "000" ){
-			$_SESSION['errorData']['mongoDB'][]= "Not permissions to modify parent directory $parentPath";
-			return 0;
-		}
-	}
 
+    // load File info to mongo
+    $fnId = (!isset($attributes['_id'])? createLabel():$attributes['_id']);
 
-	// load File info to mongo
-
-	$fnId = (!isset($attributes['_id'])? createLabel():$attributes['_id']);
-
-	if ($attributes){
-		//set default file attributes
-		if (! isset($attributes['_id']))
-				$attributes['_id'] = $fnId;
-		if (! isset($attributes['owner']))
-				$attributes['owner'] = $_SESSION['User']['id'];
-		if (! isset($attributes['mtime']))
-				$attributes['mtime'] = new MongoDB\BSON\UTCDateTime(strtotime("now")*1000);
-		if (! isset($attributes['size'])){
-                $ch = curl_init($params['url']);
+    if ($attributes){
+	//set default file attributes
+	if (! isset($attributes['_id']))
+		$attributes['_id'] = $fnId;
+	if (! isset($attributes['owner']))
+		$attributes['owner'] = $_SESSION['User']['id'];
+	if (! isset($attributes['mtime']))
+		$attributes['mtime'] = new MongoDB\BSON\UTCDateTime(strtotime("now")*1000);
+	if (! isset($attributes['size'])){
+               $ch = curl_init($params['uri']);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
                 curl_setopt($ch, CURLOPT_HEADER, TRUE);
-                curl_setopt($ch, CURLOPT_NOBODY, TRUE);
-                $attributes['size'] = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+		curl_setopt($ch, CURLOPT_NOBODY, TRUE);
+		$r = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+		if ($r){
+                	$attributes['size'] = $r;
+		}else{
+			$attributes['size'] = 0;
+		}
                 curl_close($ch);
         }
-		if (! isset($attributes['parentDir']))
-				$attributes['parentDir'] =$parentId;
-		if (! isset($attributes['path']))
-				$attributes['path'] = $url;
-		if (! isset($attributes['project']))
-				$attributes['project'] = $_SESSION['User']['activeProject'];
-		if (! isset($attributes['expiration'])){
-				$expiration = $GLOBALS['caduca'] * 24 * 3600;
-				$attributes['expiration'] = new MongoDB\BSON\UTCDateTime((strtotime("now") + $expiration)*1000);
-		}
-		$GLOBALS['filesCol']->updateOne(
-			array('_id' => $fnId),
-			$attributes,
-			array('upsert'=> true)
-		);
+	if (! isset($attributes['parentDir']))
+		$attributes['parentDir'] =$parentId;
+	if (! isset($attributes['uri']))
+		$attributes['uri'] = $uri;
+	if (! isset($attributes['project']))
+		$attributes['project'] = $_SESSION['User']['activeProject'];
+	if (! isset($attributes['expiration'])){
+		$expiration = $GLOBALS['caduca'] * 24 * 3600;
+		$attributes['expiration'] = new MongoDB\BSON\UTCDateTime((strtotime("now") + $expiration)*1000);
+	}
+	$GLOBALS['filesCol']->updateOne(
+		array('_id' => $fnId),
+		array('$set' => $attributes),
+		array('upsert'=> true)
+	);
 
-		// set parent
-		$GLOBALS['filesCol']->updateOne(
-			array("_id"=>$parentId),
-			array('$addToSet' => array("files" => $fnId))
-		);
-		modifyGSFileBNS($parentId,"atime", new MongoDB\BSON\UTCDateTime(filemtime($file)*1000));
+	// set parent
+	$GLOBALS['filesCol']->updateOne(
+		array("_id"=>$parentId),
+		array('$addToSet' => array("files" => $fnId))
+	);
+	modifyGSFileBNS($parentId,"atime", new MongoDB\BSON\UTCDateTime(filemtime($file)*1000));
 
 	}
 	// add metadata file

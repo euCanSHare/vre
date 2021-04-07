@@ -38,7 +38,6 @@ function sendEmail($recipient, $subject, $body, $reply = null, $bcc = null){
 	// ******************
 	$mail->AddAddress($recipient);
 	// ******************
-	//$mail->AddAddress("genis.bayarri@irbbarcelona.org");
 
 	if(isset($bcc)) {
 		$mail->addBcc($bcc);

@@ -12,14 +12,14 @@ if (!is_array($_REQUEST['fn']))
 foreach($_REQUEST['fn'] as $fn){
 	$file['path'] = getAttr_fromGSFileId($fn,'path');
 	$file['data_type'] = getAttr_fromGSFileId($fn,'data_type');
-	$file['format'] = getAttr_fromGSFileId($fn,'format');
+	$file['file_type'] = getAttr_fromGSFileId($fn,'file_type');
 
 	if(!$file['path']) {
 		$_SESSION['errorData']['NGL'][] = "ERROR: one of the requested files don't exist in our Data Base";
 		header('Location: '.$GLOBALS['BASEURL'].'visualizers/error.php');
 	}
 
-	if(($file['format'] != 'PDB') && ($file['format'] != 'GRO') && ($file['format'] != 'DCD')) {
+	if(($file['file_type'] != 'PDB') && ($file['file_type'] != 'GRO') && ($file['file_type'] != 'DCD')) {
 		$_SESSION['errorData']['NGL'][] = "ERROR: incorrect format for NGL Viewer. Accepted file types are PDB, GRO and DCD for trajectories.";
 		header('Location: '.$GLOBALS['BASEURL'].'visualizers/error.php');
 		die();
@@ -29,7 +29,7 @@ foreach($_REQUEST['fn'] as $fn){
 	$file['fn'] = $fn;
 	array_push($inPaths,$file);
 
-	array_push($formats,$file['format']);
+	array_push($formats,$file['file_type']);
 }
 
 $vis_type = null;
@@ -47,7 +47,7 @@ if((count($_REQUEST['fn']) == 2) && ((in_array('PDB', $formats) || in_array('GRO
 	
 	$arr_traj = array();
 	foreach($inPaths as $f) {
-		if($f['format'] != 'DCD') $arr_traj[0] = $f;
+		if($f['file_type'] != 'DCD') $arr_traj[0] = $f;
 		else $arr_traj[1] = $f;
 	}
 

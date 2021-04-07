@@ -42,7 +42,7 @@ if($_REQUEST){
 
 			$fMeta = iterator_to_array($GLOBALS['filesMetaCol']->find(array('_id' => $id,
 																																			'data_type'  => "tool_statistics",
-																																			'format'     =>'TAR',
+																																			'file_type'     =>'TAR',
 																																			'compressed' =>"gzip")));
 
 			if(count($fMeta) != 0) {
@@ -61,7 +61,7 @@ if($_REQUEST){
 
 			$fMeta = iterator_to_array($GLOBALS['filesMetaCol']->find(array('_id' => $id,
 																																			'data_type'  => "tool_statistics",
-																																			'format'     =>'TAR',
+																																			'file_type'     =>'TAR',
 																																			'compressed' =>"gzip")));
 
 
