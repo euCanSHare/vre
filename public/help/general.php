@@ -36,32 +36,39 @@ redirectOutside();
                 </div>
                 <!-- END PAGE BAR -->
                 <!-- BEGIN PAGE TITLE-->
-                <h1 class="page-title"> What is OpenEBench ?</h1>
+                <h1 class="page-title">What is the euCanSHare Virtual Research Envirnoment (VRE)?</h1>
                 <!-- END PAGE TITLE-->
                 <!-- END PAGE HEADER-->
 
-                <div class="note note-info">
-                    <h4 class="block">
-                        OpenEBench is an infra-structure designed to establish a continuous automated benchmarking system for bioinformatics methods, tools and web services.
+                <div class="note note-danger" style="background-color: #F3D8DD;border-color:#e4032e;">
+		    <h4 class="block">
+			The euCanSHare VRE is a computational platform designed for Data Quality Control, Cardiac Image Analysis, Machine Learning and Bioinformatics Analysis.
                     </h4>
                 </div>
 
-                <p><img src="assets/layouts/layout/img/help/Diagram_with_textbox.svg" style="width:80%;max-width:100%;" /></p>
+                <p><img src="https://eucanshare.bsc.es/dataportal/wp-content/uploads/2019/11/portal_home.png" style="margin:0 350px;width:20%;max-width:100%;" /></p>
 
-                <p>
-                    OpenEBench is being developed so as to cater for the needs of the bioinformatics community, especially software developers who need an objective and quantitative way to inform their decisions as well as the larger community of end-users, in their search for unbiased and up-to-date evaluation of bioinformatics methods.</p>
+		<p>
+		The euCanSHare VRE is being developed so as to cater for the needs of the scientific community, especially clinical researchers who need an objective and quantitative way to analyse their data in an unbiased way and make predictions with state-of-the art techniques. Its main objectives are:
 
                 <p>
                     The goals of OpenEBench are to:
 
                     <ul>
-                        <li>Provide guidance and software infrastructure for Benchmarking and Techincal monitoring of bioinformatics tools.</li>
-                        <li>Engage with existing benchmark initiatives making different communities aware of the platform.</li>
-                        <li>Maintain a data warehouse infrastructure to keep record of Benchmarking initiatives.</li>
-                        <li>Expose benchmarking and technical monitoring results to Elixir Tools registry.</li>
-                        <li>Establish and refine communication protocols with communities and/or infrastructure projects willing to have a unified benchmark infrastructure Coordinate with Elixir.</li>
-                        <li>Interoperability Platform to keep FAIR data principles on Benchmarking data warehouse.</li>
-                </p>
+                        <li>The democratization of the use of Machine Learning methods by the whole community by providing a easy-to-use and high-level interface with detailed documentation.</li>
+                        <li>To establish a reproducible and publicly available analysis pipeline to enhance repeatability of research results.</li>
+                    </ul>
+		</p>
+		<p>
+		   The main components of the euCanSHare VRE are:
+		    <ul>
+			<li>Tools for data quality control</li>
+			<li>The Cardiac Image Analyzer consisting of three tools: DICOM 2 NIFTI Converter, Segmentation Tool, Radiomics Analysis Tool</li>
+			<li>Machine Learning Toolbox</li>
+			<li>Bioinformatics Toolbox</li>
+                    </ul>
+
+		</p>
 
             </div>
             <!-- END CONTENT BODY -->

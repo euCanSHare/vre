@@ -4,9 +4,6 @@ require __DIR__ . "/../../config/bootstrap.php";
 
 redirectOutside();
 
-//Retrive communities
-$communities = getCommunities();
-
 // Print page
 ?>
 
@@ -47,7 +44,7 @@ $communities = getCommunities();
         <!-- BEGIN PAGE TITLE-->
         <h1 class="page-title">
           <a href="javascript:;" target="_blank"><img src="assets/layouts/layout/img/icon.png" width=100></a>
-          My Datasets
+          euCanSHare catalogue - My Datasets
         </h1>
         <!-- END PAGE TITLE-->
         <!-- END PAGE HEADER-->
@@ -125,19 +122,16 @@ $communities = getCommunities();
 	$ds_list = True;
 	if ($ds_list){
 		$datasets=[
-			['_id'=>'EGAD0001000309',
-			'name'=> 'UK10K_OBESITY_GS REL-2012-11-27',
-			'description' => '',
-			'version' => '',
-			'datatype' => 'Exome Seq',
-			'study' => 'UK10K_OBESITY_GS',
-			'access' => 'pending'
+			['_id'=>'EUC0198100',
+			'name'=> 'EUC_DEMO_MI_2020',
+			'description' => 'Studies for myocardial infarction and healthy patients for demonstration',
+			'version' => '1.0',
+			'datatype' => 'Imaging Study',
+			'study' => 'EUC_DEMO_MI',
+			'access' => 'Granted'
 		]];
 		//		foreach (getDatasets() as $obj) {
-		foreach ($datasets as $obj) {
-				if($obj['type'] != "participant") {
-					
-                        ?>
+		foreach ($datasets as $obj) { ?>
                         <tr>
                           <td> <?php echo $obj["_id"]; ?> </td>
                           <td> <?php echo $obj["name"]; ?> </td>
@@ -171,14 +165,10 @@ $communities = getCommunities();
 			    <!-- Send via POST url and metadata to getData.php -->
 
 			    <form action="applib/getData.php" method="post">
-				<input type="hidden" name="uploadType"        value="repository"/> 
-				<input type="hidden" name="url"               value="<?php echo htmlspecialchars($dataset_uri);?>" />
-				<input type="hidden" name="data_type"         value="<?php echo htmlspecialchars($obj->type);?>"/>
-				<input type="hidden" name="description"       value="<?php echo htmlspecialchars($obj->description);?>"/>
-				<input type="hidden" name="oeb_dataset_id"    value="<?php echo htmlspecialchars($obj->_id);?>" />
-				<?php foreach((array)$obj->community_ids as $community_id){ ?>
-				    <input type="hidden" name="oeb_community_ids[]" value="<?php echo htmlspecialchars($community_id);?>" />
-				<?php } ?> 
+				<input type="hidden" name="uploadType"        value="eush_demo"/> 
+				<input type="hidden" name="url"               value="" />
+				<input type="hidden" name="data_type"         value=""/>
+				<input type="hidden" name="description"       value="Studies for myocardial infarction and healthy patients for demonstration"/>
 				<button type="submit" class="btn green dropdown-toggle" value="submit">
 				    <i class="fa fa-download tooltips font-white" data-original-title="Import dataset to workspace"></i>
 				</button>
@@ -189,8 +179,8 @@ $communities = getCommunities();
                         </tr>
                           
                         
-                      <?php }
-                     }}  ?>
+	     <?php  }
+	} ?>
 
                   </tbody>
                 </table>
