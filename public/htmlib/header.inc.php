@@ -90,11 +90,15 @@
 		case 'eush_projects':
 		case 'eush_ega':
 		case 'eush_ega_datasets':
+		case 'eush_cardiogwas':
+		case 'eush_cardiogwas_table':
 		case 'datasets':
 		case 'logs': ?>
 			<link href="assets/global/plugins/bootstrap-fileinput/bootstrap-fileinput.css" rel="stylesheet" type="text/css" />
 			<link href="assets/global/plugins/datatables/datatables.min.css" rel="stylesheet" type="text/css" />
 			<link href="assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.css" rel="stylesheet" type="text/css" />
+			<link href="assets/global/plugins/datatables/plugins/jquery-datatables-checkboxes-1.2.12/css/dataTables.checkboxes.css" rel="stylesheet" type="text/css" />
+			<link href="assets/pages/css/components.css" rel="stylesheet" type="text/css" />
 			<?php break;
 		case 'help':
 		case 'toolhelp':
@@ -219,15 +223,18 @@
 		case 'eush_projects':
 		case 'eush_subjects':
 		case 'eush_experiments':
+		case 'eush_subjects_auth':
+		case 'eush_experiments_auth':
 		case 'eush_ega':
 		case 'eush_ega_datasets':
+		case 'eush_cardiogwas':
+		case 'eush_cardiogwas_table':
 		case 'sampleDataList':
 		case 'dataFromTxt':
 		case 'dataFromID':
 		case 'input':
 		case 'output':
 		case 'loading_output':
-
 		case 'general':
 		case 'starting':
 		case 'upload':
@@ -249,6 +256,7 @@
 		case 'visualizers':
 		case 'restoreLink':
 		case 'form':
+		case 'linkedAccount':
 		case 'logs':
 
 			?>

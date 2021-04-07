@@ -1,28 +1,5 @@
 <script src="htmlib/globals.js.inc.php"></script>
-<?php
 
-switch(pathinfo($_SERVER['PHP_SELF'])['filename']){
-	case 'adminUsers':
-	case 'newUser':
-	case 'editUser':
-	case 'adminTools':
-	case 'adminJobs':
-	case 'myNewTools':
-	case 'newTool':
-	case 'vmURL':
-	case 'createTest':
-	case 'index':
-	case 'index2':
-	case 'dashboard':
-	case 'uploadForm':
-	case 'uploadForm2':
-	case 'editFile':
-	case 'editFile2':
-	?>
-	
-	<?php break; 
-}
-?>
 
 <!-- BEGIN CORE PLUGINS -->
 <script src="assets/global/plugins/jquery.min.js" type="text/javascript"></script>
@@ -85,11 +62,17 @@ switch(pathinfo($_SERVER['PHP_SELF'])['filename']){
 	case 'eush_projects':
 	case 'eush_subjects':
 	case 'eush_experiments':
+	case 'eush_subjects_auth':
+	case 'eush_experiments_auth':
 	case 'eush_ega':
 	case 'eush_ega_datasets':
+	case 'eush_cardiogwas':
+	case 'eush_cardiogwas_table':
 	case 'datasets': ?>
 		<script src="assets/global/scripts/datatable.js" type="text/javascript"></script>
 		<script src="assets/global/plugins/datatables/datatables.min.js" type="text/javascript"></script>
+		<script src="assets/global/plugins/datatables/dataTables.rowsGroup.js" type="text/javascript"></script>
+		<script src="assets/global/plugins/datatables/plugins/jquery-datatables-checkboxes-1.2.12/js/dataTables.checkboxes.min.js" type="text/javascript"></script>
 		<script src="assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.js" type="text/javascript"></script>
 		<?php break; 	
 	case 'usrProfile': ?>
@@ -303,6 +286,14 @@ switch(pathinfo($_SERVER['PHP_SELF'])['filename']){
 		<script src="assets/pages/scripts/table-datasets.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
 		<script src="assets/pages/eush_js/eush_experiments.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
 		<?php break; 
+	case 'eush_subjects_auth': ?>
+		<script src="assets/pages/scripts/table-datasets.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
+		<script src="assets/pages/eush_js/eush_subjects_auth.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
+		<?php break; 
+	case 'eush_experiments_auth': ?>
+		<script src="assets/pages/scripts/table-datasets.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
+		<script src="assets/pages/eush_js/eush_experiments_auth.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
+		<?php break; 
 	case 'eush_ega': ?>
 		<script src="assets/pages/scripts/table-datasets.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
 		<script src="assets/pages/eush_js/eush_ega.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
@@ -311,6 +302,11 @@ switch(pathinfo($_SERVER['PHP_SELF'])['filename']){
 		<script src="assets/pages/scripts/table-datasets.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
 		<script src="assets/pages/eush_js/eush_ega_datasets.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
 		<?php break;
+	case 'eush_cardiogwas': 
+	case 'eush_cardiogwas_table':?>
+		<script src="assets/pages/scripts/table-datasets.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
+		<script src="getdata/eush_cardiogwas/assets/js/eush_cardiogwas.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
+		<?php break; 
 	case 'datasets': ?>
 		<script src="assets/pages/scripts/table-datasets.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
 		<?php break; 
@@ -416,8 +412,12 @@ switch(pathinfo($_SERVER['PHP_SELF'])['filename']){
 	case 'eush_projects':
 	case 'eush_subjects':
 	case 'eush_experiments':
+	case 'eush_subjects_auth':
+	case 'eush_experiments_auth':
 	case 'eush_ega':
 	case 'eush_ega_datasets':
+	case 'eush_cardiogwas':
+	case 'eush_cardiogwas_table':
 	case 'datasets':
 	case 'usrProfile':
 	case 'restoreLink':
@@ -466,6 +466,7 @@ switch(pathinfo($_SERVER['PHP_SELF'])['filename']){
 	case 'visualizers':
 	case 'sampleDataList':
 	case 'form':
+	case 'linkedAccount':
 	case 'logs':?>
 		<script src="assets/layouts/layout/scripts/layout.js" type="text/javascript"></script>
 		<script src="assets/layouts/layout/scripts/main.js?v=<?php echo rand(); ?>" type="text/javascript"></script>
@@ -515,15 +516,14 @@ switch(pathinfo($_SERVER['PHP_SELF'])['filename']){
 <?php } ?>
 
 
-<!-- GOOGLE ANALYTICS -->
-
+<!-- GOOGLE ANALYTICS  Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo $GLOBALS['GA_TAG'];?>"></script>
 <script>
-(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-		})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-			ga('create', 'UA-92062634-1', 'auto');
-			ga('send', 'pageview');
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', '<?php echo $GLOBALS['GA_TAG'];?>');
 </script>
 
 <!-- END GOOGLE ANALYTICS -->

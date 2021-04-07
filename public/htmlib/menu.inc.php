@@ -90,6 +90,9 @@ switch (pathinfo($_SERVER['PHP_SELF'])['filename']) {
 		$currentSubSection = 'rp';
 		$currentSubSubSection = 'ps';
 		break;
+	
+	case 'eush_cardiogwas':
+		$currentSection = 'dt';
 	case 'dataFromID':
 		$currentSection = 'dt';
 		$currentSubSection = 'id';
@@ -260,15 +263,28 @@ sort($visualizers);
 										<span class="title">EuroBioImaging </span>
 									</a>
 								</li>
+								<li class="nav-item <?php if ($currentSubSubSection == 'ps') { ?>active open<?php } ?>">
+									<a href="getdata/eush_ega/eush_ega.php" class="nav-link">
+										<span class="title">EGA </span>
+									</a>
+								</li>
 							</ul>
+
 							<ul class="sub-menu">
 								<li class="nav-item <?php if ($currentSubSubSection == 'bs') { ?>active open<?php } ?>">
 									<a href="getdata/datasets.php" class="nav-link">
 										<span class="title">My Datasets </span>
 									</a>
 								</li>
-							</ul>
+							</ul> 
 						</li>
+
+						<li class="nav-item <?php if ($currentSection == 'dt') { ?>active open<?php } ?>">
+							<a href="getdata/eush_cardiogwas/eush_cardiogwas.php" class="nav-link">
+								<span class="title"> Cardiovascular GWAS </span>
+							</a>
+						</li>
+
 						<li class="nav-item <?php if ($currentSubSection == 'sd') { ?>active open<?php } ?>">
 							<a href="getdata/sampleDataList.php" class="nav-link ">
 								<span class="title">Import example dataset</span>
