@@ -49,7 +49,7 @@ function get_keycloak_admintoken(){
 
 function get_keycloak_user($username,$token){
         
-    $url     =   $GLOBALS['authServer']."/admin/realms/mug/users?username=$username";
+    $url     =  $GLOBALS['authServer']."/admin/realms/".$GLOBALS['authRealm']."/users?email=$username";
     $headers = array("Content-Type: application/json" , "Authorization: Bearer $token");
 
     #curl -v  -X GET -H "Authorization: Bearer  $token" -H "Accept: application/json" https://inb.bsc.es/auth/admin/realms/mug/users?username=user@mail.com
@@ -58,9 +58,9 @@ function get_keycloak_user($username,$token){
     if ($info['http_code'] != 200 && $info['http_code'] != 204){
             if ($resp){
                 $err = json_decode($resp,TRUE);
-                $_SESSION['errorData']['Warning'][]="Admin access to MuG Auth Server users unauthorized. [".$err['error']."]: ".$err['error_description'];
+                $_SESSION['errorData']['Warning'][]="Admin access to Auth Server users unauthorized. [".$err['error']."]: ".$err['error_description'];
             }else{
-                $_SESSION['errorData']['Warning'][]="Admin access to MuG Auth Server users unauthorized.";
+                $_SESSION['errorData']['Warning'][]="Admin access to Auth Server users unauthorized.";
             }
             return false;
     }
@@ -69,7 +69,7 @@ function get_keycloak_user($username,$token){
 }
 
 function update_keycloak_user($userId,$userData,$token){
-    $url     =   $GLOBALS['authServer']."/admin/realms/mug/users/$userId";
+    $url     =   $GLOBALS['authServer']."/admin/realms/".$GLOBALS['authRealm']."/users/$userId";
     $headers = array("Content-Type: application/json" , "Authorization: Bearer $token");
 
     #curl -v  -X PUT -H "Authorization: Bearer  $1" -H "Accept: application/json" -H "Content-Type: application/json" -d '{ "attributes": { "vre_id": ["MuGUSER59647a6c60244"] }}' https://inb.bsc.es/auth/admin/realms/mug/users/ad9ced86-38f5-4027-8338-d18a3b08990e    
@@ -90,7 +90,7 @@ function update_keycloak_user($userId,$userData,$token){
 
 function update_keycloak_userPass($userId,$token){
 
-    $url     =   $GLOBALS['authServer']."/admin/realms/mug/users/$userId/execute-actions-email";
+    $url     =   $GLOBALS['authServer']."/admin/realms/".$GLOBALS['authRealm']."/users/$userId/execute-actions-email";
     $headers = array("Content-Type: application/json" , "Authorization: Bearer $token");
 
     $data = json_encode(array("UPDATE_PASSWORD"));
