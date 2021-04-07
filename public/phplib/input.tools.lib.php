@@ -3,20 +3,25 @@
 // UTILITIES
 //
 
-// get files from $fileList matching with given file type
-function matchFormat_File($type, $fileList) {
+// get files from $fileList matching with given file_meta[file_type] and file_meta[data_type]
+function matchFormat_File($file_meta, $fileList) {
 
-	$output = [];	
-    // from tool, return empty and select from modal
+	$output = [];
+		
+        // from tool, return empty and select from modal
 
 	if(empty($fileList)) return "";
 
-	// from ws / rerun, match format file with format tool field (type)
-	foreach ($fileList as $file) {
+	//Filter by file_type & data_type (keeping retrocompatibility)
+	$file_type = (isset($file_meta['file_type'])? $file_meta['file_type']:$file_meta);
+	$data_type = (isset($file_meta['data_type'])? $file_meta['data_type']:null);
 
+	// from ws / rerun, match format file with format tool field (file_type)
+	foreach ($fileList as $file) {
 		if(isset($file["fn"])) {
 
-			if(preg_grep("/".$file['format']."/i" , $type)) {
+			// when data_type given, filter by file_type+data_type. If not, filter only by file_type 
+			if(($data_type && preg_grep("/".$file['format']."/i" , $file_type) && preg_grep("/".$file['data_type']."/i" , $data_type)) OR ( !$data_type &&  preg_grep("/".$file['format']."/i" , $file_type)) )  {
 		
 				$p = explode("/", $file['path']);
                 
@@ -101,6 +106,7 @@ function InputTool_getPathsAndRerun($request) {
 			$file['path'] = getAttr_fromGSFileId($fn,'path');
 			$file['fn'] = $fn;
 			$file['format'] = getAttr_fromGSFileId($fn,'format');
+			$file['data_type'] = getAttr_fromGSFileId($fn,'data_type');
 			array_push($output[1],$file);
 		}
 		$output[0] = $dirMeta['arguments'];
@@ -115,11 +121,11 @@ function InputTool_getPathsAndRerun($request) {
 			$file['path'] = getAttr_fromGSFileId($fn,'path');
 			$file['fn'] = $fn;
 			$file['format'] = getAttr_fromGSFileId($fn,'format');
+			$file['data_type'] = getAttr_fromGSFileId($fn,'data_type');
 			array_push($output[1],$file);
 		}
 		//array_push($output[1],getAttr_fromGSFileId($fn,'path'));
 	}
-
 	return $output;
 
 }
@@ -222,7 +228,7 @@ function InputTool_printSelectFile($input, $rerun, $ff, $multiple, $required) {
 					<span class="input-group-addon"><i class="fa fa-file"></i></span>
 					<textarea 
 						name="visible_'.$input['name'].'"
-						class="form-control form-field-enabled field_required" 
+						class="form-control form-field-enabled '.$req.'" 
 						style="height:'.$textarea_height.'px"
 						placeholder="'.$GLOBALS['placeholder_input'].'" 
 						readonly>'.implode("\n", $p).'</textarea>
