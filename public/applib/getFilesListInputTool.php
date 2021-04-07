@@ -1,6 +1,7 @@
 <?php 
 
 require __DIR__."/../../config/bootstrap.php";
+
 redirectOutside();
 
 $toolsHelp = getSingleTool_Help($_REQUEST["toolID"], $_REQUEST["op"]);
@@ -20,6 +21,10 @@ $files_list = getGSFiles_filteredBy(array("data_type" => array('$in' => $dt_list
 }*/
 
 $list = [];
+$file_arr = [];
+$project_arr = [];
+$id_arr = [];
+$execution_arr = [];
 
 //if($from == "workspace") {
 
@@ -48,9 +53,28 @@ foreach ($files_list as $file) {
     }
 
 	$list[] = $a;
+	// Alejandro: Select All fn -> Create individual lists.
+	$file_arr[] = $a["file"];	
+	$project_arr[] = $a["project_name"];
+	$id_arr[] = $a["id"];
+	$execution_arr[] = $a["execution"];
 }
 
-//}
+// Alejandro: Select All fn -> Implode for creating a unique string from an array.
+$files = implode(" ",$file_arr);
+$projects = implode(" ",$project_arr);
+$ids = implode(" ",$id_arr);
+$executions = implode(" ",$execution_arr);
+
+$count1 = 0;
+$count2 = 0;
+$init_all = "";
+$count1 = count($file_arr);
+$count2 = count($file_selected);
+
+if($count2 == $count1){
+	$init_all = "checked";
+}
 
 // TABLE
 
@@ -64,7 +88,17 @@ $html = '<table id="workspace_st2" class="display" cellspacing="0" width="100%">
 			$html .= '<th style="background-color: #eee;padding:3px;" class="selector">Execution</th>';
 		$html .= '</tr>';
     $html .= '<tr id="heading">';
-			$html .= '<th></th>';
+			
+	  // Alejandro: Select All fn -> Adding HTML and event listener call (onclick="changeAllCheckbox")
+	  // ORIGINAL -> $html .= '<th></th>';
+	  $html .= '<th style="padding-left: 15px;"> 
+	  <label class="mt-checkbox mt-checkbox-outline" style="margin-bottom: 0px; font-weight: bold">
+		  All
+		  <input type="checkbox" class="checkboxes" '.$init_all.' onclick="changeAllCheckbox(this, \''.$files.'\', \''.$ids.'\', \''.$projects.'\', \''.$executions.'\' )" />
+		  <span></span>
+	  </label>
+	  </th>';
+
       $html .= '<th>File</th>';
       $html .= '<th>Project</th>';
       $html .= '<th>Execution</th>';
@@ -81,7 +115,6 @@ $html = '<table id="workspace_st2" class="display" cellspacing="0" width="100%">
 			$tr_class = "";
 			$file_sel = "";
 			
-			//if($file["id"] == $file_selected) { 
 			if(in_array($file["id"], $file_selected)) {
 
 				$tr_class = "input_highlighted";
@@ -96,12 +129,11 @@ $html = '<table id="workspace_st2" class="display" cellspacing="0" width="100%">
 
 			} 
 
-
 			$html .= '<tr class="row-clickable '.$tr_class.'">';
 			if($multiple) { 
 				$html .= '<td>';
 				$html .= '<label class="mt-checkbox mt-checkbox-single mt-checkbox-outline">';
-					$html .= '<input type="checkbox" class="checkboxes" '.$file_sel.' value="'.$file["id"].'" onchange="changeCheckbox(this, \''.$file["file"].'\', \''.$file["id"].'\', \''.$file['project_name'].' / '.$file["execution"].' /\')" />';
+					$html .= '<input type="checkbox" class="checkboxes" '.$file_sel.' value="false" onchange="changeCheckbox(this, \''.$file["file"].'\', \''.$file["id"].'\', \''.$file['project_name'].' / '.$file["execution"].' /\')" />';
 					$html .= '<span></span>';
 				$html .= '</label>';
 				$html .= '</td>';
@@ -163,5 +195,5 @@ $thelp = '<table class="table">';
 				$thelp .= '</tbody>';
 			$thelp .= '</table>';
 
-echo '{"table":'.json_encode($html).', "selectedFiles":'.json_encode($selectedFiles).', "help": '.json_encode($thelp).'}';
+echo '{"table":'.json_encode($html).', "selectedFiles":'.json_encode($selectedFiles).', "array":'.json_encode($out).', "help": '.json_encode($thelp).'}';
 
