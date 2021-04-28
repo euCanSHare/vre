@@ -1,6 +1,6 @@
 <?php
 
-require "../../phplib/genlibraries.php";
+require __DIR__."/../../../config/bootstrap.php";
 redirectOutside();
 
 // get tool details
