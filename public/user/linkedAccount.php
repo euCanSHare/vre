@@ -108,6 +108,7 @@ require "../htmlib/header.inc.php";?>
                                         <div class="col-md-6">
 					    <div class="form-group">
 							<a target="_blank" href="https://wiki.xnat.org/documentation/how-to-use-xnat/generating-an-alias-token-for-scripted-authentication">How to generate an euro-BioImaging Alias Token?</a><br/>
+							<a target="_blank" href="https://xnat.bmia.nl/">Go to euro-BioImaging</a></br>
 						<a href="javascript:openTermsOfUse();"><?php echo $GLOBALS['NAME']?> VRE terms of use</a>
                                             </div>
                                         </div>

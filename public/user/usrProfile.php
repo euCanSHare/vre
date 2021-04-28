@@ -471,6 +471,8 @@ foreach (array_values(iterator_to_array($GLOBALS['countriesCol']->find(array(), 
                                                 	<?php if ($expiresIn < 0){ ?>
 								<div style="margin:3px;font-size:0.9em;">
 								<a target="_blank" href="https://wiki.xnat.org/documentation/how-to-use-xnat/generating-an-alias-token-for-scripted-authentication">How to generate an euro-BioImaging Alias Token?</a>
+								<br/>
+								<a target="_blank" href="https://xnat.bmia.nl/">Go to euro-BioImaging</a>
 								</div>
 							<?php } ?>
 
