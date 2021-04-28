@@ -730,18 +730,20 @@ print "output  (file or folder) = $output\n";
    }
 }
 
+// Get URL information from HTTP headers. Data fetched using HEAD, or a chunked request if HEAD fails. 
+//
 
 function process_URL($url,$basic_auth=0){
 
+    var_dump("PROCESS_URL ====>",$url,$basic_auth,"==========<br/>");
     $response = array(
 		"status"        => false,
 		"size"          => -1,
 		"filename"      => false,
 		"effective_url" => false);
 
-    // get URL headers
+    // get URL headers (basic_auth  not accepted)
     $headers_data = get_headers($url,1);
-    //var_dump("<br/>______process URL __ HEADERS_DATA _______________<br/>",$headers_data);
    
     //check server and status
     if ($headers_data === false){
@@ -750,31 +752,44 @@ function process_URL($url,$basic_auth=0){
     }
     $response['status'] = (preg_match("/^HTTP.* (\d\d\d) /",$headers_data[0],$m)? $m[1] : $response['status']);
 
-
     // if HTTP error code, try getting headers with CURL
     if ($response['status'] > 301){ 
 
-        //validate URL via HEAD
-    	$ch = curl_init($url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+	//get again URL headers via CURL (fetching first 1000b chunk)
+
+	$limit = 1000;
+	$callback = function($ch, $chunk) use ($limit, &$curl_data) { 
+	        static $data = '';
+	        $len = strlen($data) + strlen($chunk);
+	        if ($len >= $limit) {
+		    $data .= substr($chunk, 0, $limit - strlen($data));
+      		    $curl_data = $data;
+		    return -1;
+    	        }
+    	        $data .= $chunk;
+    	        return strlen($chunk);
+  	    };
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
 	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
-	curl_setopt($ch, CURLOPT_HEADER, TRUE);
 	curl_setopt($ch, CURLOPT_TIMEOUT, 6);
-	//curl_setopt($ch, CURLOPT_NOBODY, TRUE); // forces method HEAD. Does not work with redirects
+  	curl_setopt($ch, CURLOPT_HEADER, 1);
 	if ($basic_auth){
-		curl_setopt($curl, CURLOPT_USERPWD, $basic_auth);
+		curl_setopt($ch, CURLOPT_USERPWD, $basic_auth);
 	}
+ 	curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_WRITEFUNCTION, $callback);
 
-	$curl_data = curl_exec($ch);
-	$info      = curl_getinfo($ch);
+	$d  = curl_exec($ch);
+	$info  = curl_getinfo($ch);
+	curl_close($ch);
 
+	//var_dump("<br/><br/>__________CURL DATA _______________",$curl_data);
+	//var_dump("<br/><br/>__________CURL INFO _______________",$info);
 	if (!$curl_data){
-        	$_SESSION['errorData']['Error'][] = "Resource URL ('$url') cannot be verified. HEAD not accepted";
         	return $response;
-    	}
-   	var_dump("<br/>___________AUTHED CURL DATA ___________<br/>",$curl_data);
-   	var_dump("<br/>___________AUTHED CURL INFO ___________<br/>",$info);
-
+	}
 	//compose parsed URL response from CURL-info data
 
     	//corrects url when 301/302 redirect(s) lead(s) to 200
@@ -822,7 +837,7 @@ function getData_fromRepository($params=array()) { //url, repo, id, taxon, filen
 
     // optional params mapped to VRE metadata attributes
     $datatype = (isset($params['data_type'])&& $params['data_type']? $params['data_type']:"");
-    $filetype = (isset($params['file_type'])&& $params['file_type']? $params['file_type']:"");
+    $filetype = (isset($params['file_type'])&& $params['file_type']? strtoupper($params['file_type']):"");
     $descrip  = (isset($params['description'])&& $params['description']? $params['description']:"");
     $size     = (isset($params['size']) && $params['size']? $params['size']:"");
 
@@ -834,7 +849,6 @@ function getData_fromRepository($params=array()) { //url, repo, id, taxon, filen
     // defs
     $auth = 0;
     $metadata_vre = array();
-
     if (!$url && !$urn ){
             $_SESSION['errorData']['Error'][]="Bad request. Cannot import remote resource. Either the 'url' or 'urn' parameters are expected";     
             ###redirect($_SERVER['HTTP_REFERER']);
@@ -920,7 +934,7 @@ function getData_fromRepository($params=array()) { //url, repo, id, taxon, filen
     
     if ($repo_type){
 	$repo = $GLOBALS['repositories'][$repo_type][$repository];
-	var_dump("<br/>REPO ===>>>> ",$repo);
+	var_dump("<br/><br/><br/>REPO ===>>>> ",$repo);
 
     	// set 'auth' and 'vre_metadata'
         switch ($repo_type){
@@ -1009,17 +1023,16 @@ function getData_fromRepository($params=array()) { //url, repo, id, taxon, filen
 
     }
 
-    var_dump("<br/>AUTH ===>>>> ",$auth);
+    var_dump("<br/>AUTH ===========>>>> ",$auth);
     print "<br/> --------- <br/>";
 
     // validate given URL
     
     // Get URL headers
-    if ($auth != -1 && $auth != 0)
+
+    if (strlen($auth)>4)
 	    $url_data = process_URL($url, $auth); 
-
-    print_r($url_data);
-
+    
     //status
     $status        = $url_data['status'];
     $url_effective = $url_data['effective_url'];
@@ -1050,7 +1063,7 @@ function getData_fromRepository($params=array()) { //url, repo, id, taxon, filen
     }
 
     // setting repository directory
-
+  
     $dataDirPath = getAttr_fromGSFileId($_SESSION['User']['dataDir'],"path");
     $wd          = $dataDirPath."/repository";
     $wdP         = $GLOBALS['dataDir']."/".$wd;
@@ -1115,11 +1128,14 @@ function getData_fromRepository($params=array()) { //url, repo, id, taxon, filen
         // setting tool	inputs
         $toolInputs= array();
 
-        // setting tool	arguments. Tool is responsible to create outputs in the output_dir
+	// setting tool	arguments. Tool is responsible to create outputs in the output_dir
         $toolArgs  = array(
                 "url"    => "\"$url\"",   
-                "output" => $fnP); 
-
+		"output" => $fnP); 
+	
+	if (strlen($auth)>4){
+		$toolArgs['basic_auth'] = "\"".base64_encode($auth)."\"";
+	}
         // setting tool outputs. Metadata will be saved in DB during tool output_file registration
         if (!$descrip){
 		$descrip="Remote file extracted from $url";
@@ -1541,3 +1557,4 @@ function getData_fromURL_DEPRECATED($source, $ext = null) {
 
 }
 ?>
+
