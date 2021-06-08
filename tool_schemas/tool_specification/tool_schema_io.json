@@ -1,5 +1,5 @@
 {
-  "id": "http://openvre.bsc.es/tool-schema",
+  "id": "https://vre.eucanshare.bsc.es/tool-schema",
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "title": "Tool definition schema - I/O",

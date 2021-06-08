@@ -1,5 +1,5 @@
 {
-  "id": "http://openvre.bsc.es/tool-schema",
+  "id": "https://vre.eucanshare.bsc.es/tool-schema",
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "title": "Tool definition schema",
@@ -60,6 +60,7 @@
           "imaging",
           "omics",
           "phenotypic",
+	  "epidemiology",
           "other"
         ]
       },
@@ -95,15 +96,6 @@
           "minimum": 5,
           "maximum": 1440,
           "default": 1440
-        },
-        "clouds": {
-          "type": "object",
-          "properties": {
-            "BSC_Starlife": {
-              "$ref": "#/definitions/cloud"
-            }
-          },
-          "additionalProperties": false
         }
       }
     },
