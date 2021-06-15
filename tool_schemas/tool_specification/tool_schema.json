@@ -216,7 +216,9 @@
                 "annotations",
                 "group_definitions",
                 "covariate_matrix",
-                "differential_matrix"
+                "differential_matrix",
+                "study_data",
+                "study_meta_data"
               ]
             }
           },
@@ -377,7 +379,9 @@
                 "annotations",
                 "group_definitions",
                 "covariate_matrix",
-                "differential_matrix"
+                "differential_matrix",
+                "study_data",
+                "study_meta_data"
 
               ]
             }
@@ -591,7 +595,9 @@
                 "annotations",
                 "group_definitions",
                 "covariate_matrix",
-                "differential_matrix"
+                "differential_matrix",
+                "study_data",
+                "study_meta_data"
                 ]
               },
               "file_path": {
